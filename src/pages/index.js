@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calculator, Calendar, TrendingUp, Info, RefreshCw } from 'lucide-react';
+import { Calculator, Calendar, TrendingUp, Info, RefreshCw, Globe } from 'lucide-react';
 import { CENTRAL_BANK_CSV } from './centralBankRates.js';
 
 import DatePicker from "react-datepicker";
@@ -23,15 +23,96 @@ const DepositCalculator = () => {
   const [currentRates, setCurrentRates] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [language, setLanguage] = useState('en'); // 'en' for English, 'is' for Icelandic
 
   const CAPITAL_GAINS_TAX = 22; // 22% fjármagnstekjuskattur
   const DEPOSIT_RATE_MARGIN = 0.60; // Deposit rate = Key rate - 0.60%
-  const LOCALE = 'en-GB'; // Use British locale for DD/MM/YYYY formatting
+  const LOCALE = language === 'en' ? 'en-GB' : 'is-IS'; // Use British locale for DD/MM/YYYY formatting
+  
+  // Translation object
+  const translations = {
+    en: {
+      title: 'Rental deposit calculator',
+      subtitle: 'According to the Article 40 of Icelandic Rent Act No. 36/1994, landlords must keep rental deposits in the highest available interest savings account. However, many landlords fail to do this, resulting in tenants losing out on interest earnings; furthermore the law does not specify how to calculate the interest owed. This tool provides a simple way to calculate the approximate interest owed.',
+      depositAmount: 'Deposit amount (ISK)',
+      startDate: 'Start date',
+      endDate: 'End date',
+      calculateInterest: 'Calculate interest',
+      enterDepositAmount: 'Enter deposit amount',
+      rateCalculationMethod: 'Rate calculation method',
+      rateCalculationText: 'According to Icelandic rental law, deposits must be stored in the highest interest savings account available. This calculator assumes the highest available rate is the Central Bank\'s key interest rate minus 0.60%, which reflects the interest offered on Auður bank\'s savings account, generally the highest one on the market.',
+      interestCalculation: 'Interest calculation',
+      enterDepositDetails: 'Enter deposit details to calculate interest',
+      netInterestEarned: 'Net interest earned',
+      totalAmount: 'Total amount',
+      detailedBreakdown: 'Detailed breakdown',
+      originalDeposit: 'Original deposit:',
+      duration: 'Duration:',
+      days: 'days',
+      grossInterest: 'Gross interest (variable rates):',
+      capitalGainsTax: 'Fjármagnstekjuskattur',
+      netInterest: 'Net interest earned:',
+      effectiveAnnualRate: 'Effective annual rate (after tax):',
+      interestRatePeriods: 'Interest rate periods',
+      faq1Title: 'How is the deposit interest calculated?',
+      faq1Text: 'According to Icelandic law, the interest is calculated based on the Central Bank of Iceland\'s key interest rate minus a margin (0.60%), which is usually the rate of the best interest on the market. The calculator applies the appropriate rate for each time period, accounting for any rate changes during your rental period.',
+      faq2Title: 'Do I have to pay tax on the interest?',
+      faq2Text: 'Yes, capital gains tax (Fjármagnstekjuskattur) of 22% is automatically applied to the interest earned on your deposit. This calculator shows both gross interest and net interest after tax. Whether the tax burden of this interest is on the tenant or the landlord is a matter of legal interpretation.',
+      faq3Title: 'What if my landlord doesn\'t pay me the correct interest?',
+      faq3Text: 'According to Article 40 of the Icelandic Rent Act (Húsaleigulög nr. 36/1994), landlords are legally required to keep deposits in separate accounts with the highest available interest rate. If your landlord hasn\'t paid the correct interest, you may have grounds for a claim. The landlord has four weeks from the end of the rental period to pay the interest owed. If they fail to do so, you can take legal action to recover the amount, and claim "dráttarvextir" (default interest) from the date the interest was due.',
+      faq4Title: 'How often do interest rates change?',
+      faq4Text: 'The Central Bank of Iceland periodically reviews and adjusts its key interest rate. These changes directly affect the interest rate that should be applied to your deposit. This calculator automatically accounts for all rate changes during your rental period. The tool does not provide real-time updates, so it is advisable to check the Central Bank\'s website for the latest rates.',
+      footerText1: 'Created and hosted by Gamithra.',
+      footerText2: 'This tool is for informational purposes; please consult legal advice for specific cases.'
+    },
+    is: {
+      title: 'Reiknivél tryggingarfjár',
+      subtitle: 'Samkvæmt 40. gr. húsaleigulaga nr. 36/1994 skulu leigusalar varðveita tryggingarfé á sparireikningi með hæstu mögulegu vöxtum. Margir leigusalar gera það ekki, sem veldur því að leigjendur missa af vaxtatekjum; lögin kveða ekki á um hvernig eigi að reikna út vexti sem standa leigjanda til boða. Þessi reiknivél býður upp á einfalda leið til að áætla vexti sem ættu að hafa verið greiddir.',
+      depositAmount: 'Tryggingarfé (ISK)',
+      startDate: 'Upphafsdagur',
+      endDate: 'Lokadagur',
+      calculateInterest: 'Reikna vexti',
+      enterDepositAmount: 'Settu inn upphæð tryggingarfjár',
+      rateCalculationMethod: 'Aðferð við útreikning vaxta',
+      rateCalculationText: 'Samkvæmt íslenskum húsaleigulögum skal tryggingarfé geymt á reikningi með hæstu fáanlegu vöxtum. Þessi reiknivél byggir á þeirri forsendu að hæstu vextirnir séu stýrivextir Seðlabanka Íslands að frádregnum 0,60%, sem samsvarar yfirleitt vöxtum á hæstu reikningum á markaðnum, eins og hjá Auði sparireikningi.',
+      interestCalculation: 'Vaxtareikningur',
+      enterDepositDetails: 'Settu inn upplýsingar um tryggingarfé til að reikna vexti',
+      netInterestEarned: 'Vaxtatekjur eftir skatt',
+      totalAmount: 'Heildarupphæð',
+      detailedBreakdown: 'Nánari sundurliðun',
+      originalDeposit: 'Upphaflegt tryggingarfé:',
+      duration: 'Tímalengd:',
+      days: 'dagar',
+      grossInterest: 'Heildarvextir (breytilegir):',
+      capitalGainsTax: 'Fjármagnstekjuskattur',
+      netInterest: 'Vaxtatekjur eftir skatt:',
+      effectiveAnnualRate: 'Raunávöxtun á ári (eftir skatt):',
+      interestRatePeriods: 'Tímabil vaxta',
+      faq1Title: 'Hvernig eru vextir af tryggingarfé reiknaðir?',
+      faq1Text: 'Samkvæmt íslenskum lögum eru vextir reiknaðir út frá stýrivöxtum Seðlabanka Íslands að frádregnum 0,60%, sem endurspeglar yfirleitt hæstu vexti á markaðnum. Reiknivélin beitir viðeigandi vöxtum fyrir hvert tímabil og tekur tillit til vaxta breytinga á leigutímanum.',
+      faq2Title: 'Þarf ég að greiða skatt af vöxtunum?',
+      faq2Text: 'Já, fjármagnstekjuskattur (22%) er sjálfkrafa dreginn frá vöxtum af tryggingarfé. Þessi reiknivél sýnir bæði heildarvexti og vaxtatekjur eftir skatt. Hvort leigjandi eða leigusali beri skattskylduna er lögfræðilegt álitaefni.',
+      faq3Title: 'Hvað ef leigusali greiðir ekki rétta vexti?',
+      faq3Text: 'Samkvæmt 40. gr. húsaleigulaga nr. 36/1994 ber leigusala að geyma tryggingarfé á sérstökum reikningi með hæstu mögulegu vöxtum. Ef leigusali hefur ekki greitt rétta vexti getur leigjandi átt rétt á kröfu. Leigusali hefur fjórar vikur frá lokum leigutímans til að greiða vextina. Ef hann gerir það ekki, getur leigjandi leitað réttar síns og krafist dráttarvaxta frá þeim degi sem greiðslan átti að berast.',
+      faq4Title: 'Hversu oft breytast vextir?',
+      faq4Text: 'Seðlabanki Íslands endurskoðar og breytir stýrivöxtum reglulega. Þessar breytingar hafa bein áhrif á vexti sem eiga að gilda um tryggingarfé. Reiknivélin tekur sjálfkrafa mið af öllum vaxtabreytingum á leigutímanum. Tólið veitir ekki rauntímaupplýsingar, svo það er ráðlagt að skoða heimasíðu Seðlabankans fyrir nýjustu vexti.',
+      footerText1: 'Búið til og hýst af Gamithra.',
+      footerText2: 'Þetta tól er eingöngu til upplýsinga; leitaðu lögfræðilegrar ráðgjafar vegna sérstakra mála.'
+    }
+    
+  };
+
+  // Update document title when language changes
+  useEffect(() => {
+    document.title = language === 'en' 
+      ? 'Rental Deposit Calculator' 
+      : 'Tryggingarfé Reiknivél';
+  }, [language]);
 
   // Helper function to format dates for display (DD/MM/YYYY)
   const formatDateDisplay = (date) => {
     const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return dateObj.toLocaleDateString(LOCALE); // Use en-GB for DD/MM/YYYY format
+    return dateObj.toLocaleDateString(LOCALE); // Use locale-appropriate date formatting
   };
 
   // Fetch and process Central Bank rates
@@ -272,16 +353,26 @@ const DepositCalculator = () => {
   const today = new Date().toISOString().split('T')[0];
 
   return (
-    <I18nProvider locale="en-GB">
-      <div className="min-h-screen bg-gray-50 p-12">
+    <I18nProvider locale={language === 'en' ? 'en-GB' : 'is-IS'}>
+      <div className="min-h-screen bg-stone-100 p-12">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
+          <div className="flex justify-end mb-2">
+            <button
+              onClick={() => setLanguage(language === 'en' ? 'is' : 'en')}
+              className="flex items-center space-x-2 bg-white border border-gray-300 hover:bg-blue-50 px-4 py-2 rounded-full text-sm font-medium transition-colors"
+            >
+              <Globe className="w-4 h-4 text-blue-600" />
+              <span className="text-gray-800">{language === 'en' ? 'Íslenska' : 'English'}</span>
+            </button>
+          </div>
+
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-gray-900 mb-2">
-              Leigugjald vaxta reiknivél
+              {translations[language].title}
             </h1>
             <p className="text-lg text-gray-600 mb-4">
-              According to the Article 40 of Icelandic Rent Act No. 36/1994, the landlord has to keep the deposit on the best savings account available
+              {translations[language].subtitle}
             </p>
             <div className="flex flex-col items-center gap-4">
             </div>
@@ -299,21 +390,21 @@ const DepositCalculator = () => {
             <div className="bg-white rounded-2xl p-8">
               <div className="flex items-center mb-6">
                 <Calculator className="w-6 h-6 text-blue-600 mr-3" />
-                <h2 className="text-2xl font-semibold text-gray-900">Calculate interest</h2>
+                <h2 className="text-2xl font-semibold text-gray-900">{translations[language].calculateInterest}</h2>
               </div>
 
               <div className="space-y-6">
                 {/* Deposit Amount */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Deposit amount (ISK)
+                    {translations[language].depositAmount}
                   </label>
                   <div className="relative">
                     <input
                       type="text"
                       value={depositAmount}
                       onChange={(e) => setDepositAmount(e.target.value)}
-                      placeholder="Enter deposit amount"
+                      placeholder={translations[language].enterDepositAmount}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg text-gray-900"
                     />
                     <span className="absolute right-3 top-3 text-gray-700">kr</span>
@@ -324,7 +415,7 @@ const DepositCalculator = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <Calendar className="w-4 h-4 inline mr-1" />
-                    Start date
+                    {translations[language].startDate}
                   </label>
                   <DatePicker
                     selected={startDate ? new Date(startDate) : null}
@@ -346,7 +437,7 @@ const DepositCalculator = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <Calendar className="w-4 h-4 inline mr-1" />
-                    End date
+                    {translations[language].endDate}
                   </label>
                   <DatePicker
                     selected={endDate ? new Date(endDate) : null}
@@ -371,8 +462,8 @@ const DepositCalculator = () => {
                 <div className="flex items-start">
                   <Info className="w-5 h-5 text-amber-600 mr-2 mt-0.5 flex-shrink-0" />
                   <div className="text-sm text-amber-800">
-                    <p className="font-medium mb-1">Rate calculation method</p>
-                    <p>According to Icelandic rental law, deposits must be stored in the highest interest savings account available. This calculator assumes the highest available rate is the Central Bank's key interest rate minus 0.60%, which reflects typical bank margins on deposit accounts.</p>
+                    <p className="font-medium mb-1">{translations[language].rateCalculationMethod}</p>
+                    <p>{translations[language].rateCalculationText}</p>
                   </div>
                 </div>
               </div>
@@ -380,7 +471,7 @@ const DepositCalculator = () => {
 
             {/* Results */}
             <div className="bg-white rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-6">Interest calculation</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-6">{translations[language].interestCalculation}</h2>
 
               {results ? (
                 <div className="space-y-6">
@@ -468,42 +559,42 @@ const DepositCalculator = () => {
               ) : (
                 <div className="text-center py-12">
                   <Calculator className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500">Enter deposit details to calculate interest</p>
+                  <p className="text-gray-500">{translations[language].enterDepositDetails}</p>
                 </div>
               )}
             </div>
           </div>
 
           {/* FAQ Section */}
-          <div className="mt-12 bg-white rounded-2xl p-8">
+          <div className="mt-12 bg-stone-100 rounded-2xl p-8">
             
             <div className="space-y-6">
               <div className="border-b pb-4">
-                <h3 className="font-medium text-lg text-gray-900 mb-2">How is the deposit interest calculated?</h3>
-                <p className="text-gray-700">According to Icelandic law, the interest is calculated based on the Central Bank of Iceland's key interest rate minus a standard margin (0.60%). The calculator applies the appropriate rate for each time period, accounting for any rate changes during your rental period.</p>
+                <h3 className="font-medium text-lg text-gray-900 mb-2">{translations[language].faq1Title}</h3>
+                <p className="text-gray-700">{translations[language].faq1Text}</p>
               </div>
               
               <div className="border-b pb-4">
-                <h3 className="font-medium text-lg text-gray-900 mb-2">Do I have to pay tax on the interest?</h3>
-                <p className="text-gray-700">Yes, capital gains tax (Fjármagnstekjuskattur) of 22% is automatically applied to the interest earned on your deposit. This calculator shows both gross interest and net interest after tax.</p>
+                <h3 className="font-medium text-lg text-gray-900 mb-2">{translations[language].faq2Title}</h3>
+                <p className="text-gray-700">{translations[language].faq2Text}</p>
               </div>
               
               <div className="border-b pb-4">
-                <h3 className="font-medium text-lg text-gray-900 mb-2">What if my landlord doesn't pay me the correct interest?</h3>
-                <p className="text-gray-700">According to Article 40 of the Icelandic Rent Act (Húsaleigulög nr. 36/1994), landlords are legally required to keep deposits in separate accounts with the highest available interest rate. If your landlord hasn't paid the correct interest, you may have grounds for a claim.</p>
+                <h3 className="font-medium text-lg text-gray-900 mb-2">{translations[language].faq3Title}</h3>
+                <p className="text-gray-700">{translations[language].faq3Text}</p>
               </div>
               
               <div>
-                <h3 className="font-medium text-lg text-gray-900 mb-2">How often do interest rates change?</h3>
-                <p className="text-gray-700">The Central Bank of Iceland periodically reviews and adjusts its key interest rate. These changes directly affect the interest rate that should be applied to your deposit. This calculator automatically accounts for all rate changes during your rental period.</p>
+                <h3 className="font-medium text-lg text-gray-900 mb-2">{translations[language].faq4Title}</h3>
+                <p className="text-gray-700">{translations[language].faq4Text}</p>
               </div>
             </div>
           </div>
 
           {/* Footer */}
           <div className="text-center mt-12 text-sm text-gray-600">
-            <p>Interest rates calculated from Central Bank of Iceland key interest rates with 0.60% margin deduction.</p>
-            <p className="mt-1">This tool is for informational purposes. Please consult legal advice for specific cases.</p>
+            <p>{translations[language].footerText1}</p>
+            <p className="mt-1">{translations[language].footerText2}</p>
           </div>
         </div>
       </div>
