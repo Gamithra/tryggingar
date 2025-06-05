@@ -273,7 +273,7 @@ const DepositCalculator = () => {
 
   return (
     <I18nProvider locale="en-GB">
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 p-6">
+      <div className="min-h-screen bg-gray-50 p-12">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-8">
@@ -281,30 +281,9 @@ const DepositCalculator = () => {
               Leigugjald vaxta reiknivél
             </h1>
             <p className="text-lg text-gray-600 mb-4">
-              Rental deposit interest calculator for Iceland
+              According to the Article 40 of Icelandic Rent Act No. 36/1994, the landlord has to keep the deposit on the best savings account available
             </p>
             <div className="flex flex-col items-center gap-4">
-              <div className="inline-flex items-center bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm">
-                <TrendingUp className="w-4 h-4 mr-2" />
-                {loading ? 'Loading rates...' :
-                  `Highest rate: ${getCurrentHighestRate().rate}% - before ${CAPITAL_GAINS_TAX}% tax`}
-              </div>
-
-              {!loading && currentRates.arion?.calculatedFromCBI && (
-                <div className="inline-flex items-center bg-green-100 text-green-800 px-3 py-2 rounded-full text-sm">
-                  <Info className="w-4 h-4 mr-1" />
-                  CBI Key Rate: {currentRates.arion.keyRate}% → Deposit Rate: {currentRates.arion.rate}%
-                </div>
-              )}
-
-              <button
-                onClick={fetchCurrentRates}
-                disabled={loading}
-                className="inline-flex items-center bg-green-100 hover:bg-green-200 text-green-800 px-3 py-2 rounded-full text-sm transition-colors disabled:opacity-50"
-              >
-                <RefreshCw className={`w-4 h-4 mr-1 ${loading ? 'animate-spin' : ''}`} />
-                Reload rates
-              </button>
             </div>
 
             {error && (
@@ -317,7 +296,7 @@ const DepositCalculator = () => {
 
           <div className="grid lg:grid-cols-2 gap-8">
             {/* Input Form */}
-            <div className="bg-white rounded-2xl shadow-xl p-8">
+            <div className="bg-white rounded-2xl p-8">
               <div className="flex items-center mb-6">
                 <Calculator className="w-6 h-6 text-blue-600 mr-3" />
                 <h2 className="text-2xl font-semibold text-gray-900">Calculate interest</h2>
@@ -400,7 +379,7 @@ const DepositCalculator = () => {
             </div>
 
             {/* Results */}
-            <div className="bg-white rounded-2xl shadow-xl p-8">
+            <div className="bg-white rounded-2xl p-8">
               <h2 className="text-2xl font-semibold text-gray-900 mb-6">Interest calculation</h2>
 
               {results ? (
@@ -492,6 +471,32 @@ const DepositCalculator = () => {
                   <p className="text-gray-500">Enter deposit details to calculate interest</p>
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* FAQ Section */}
+          <div className="mt-12 bg-white rounded-2xl p-8">
+            
+            <div className="space-y-6">
+              <div className="border-b pb-4">
+                <h3 className="font-medium text-lg text-gray-900 mb-2">How is the deposit interest calculated?</h3>
+                <p className="text-gray-700">According to Icelandic law, the interest is calculated based on the Central Bank of Iceland's key interest rate minus a standard margin (0.60%). The calculator applies the appropriate rate for each time period, accounting for any rate changes during your rental period.</p>
+              </div>
+              
+              <div className="border-b pb-4">
+                <h3 className="font-medium text-lg text-gray-900 mb-2">Do I have to pay tax on the interest?</h3>
+                <p className="text-gray-700">Yes, capital gains tax (Fjármagnstekjuskattur) of 22% is automatically applied to the interest earned on your deposit. This calculator shows both gross interest and net interest after tax.</p>
+              </div>
+              
+              <div className="border-b pb-4">
+                <h3 className="font-medium text-lg text-gray-900 mb-2">What if my landlord doesn't pay me the correct interest?</h3>
+                <p className="text-gray-700">According to Article 40 of the Icelandic Rent Act (Húsaleigulög nr. 36/1994), landlords are legally required to keep deposits in separate accounts with the highest available interest rate. If your landlord hasn't paid the correct interest, you may have grounds for a claim.</p>
+              </div>
+              
+              <div>
+                <h3 className="font-medium text-lg text-gray-900 mb-2">How often do interest rates change?</h3>
+                <p className="text-gray-700">The Central Bank of Iceland periodically reviews and adjusts its key interest rate. These changes directly affect the interest rate that should be applied to your deposit. This calculator automatically accounts for all rate changes during your rental period.</p>
+              </div>
             </div>
           </div>
 
