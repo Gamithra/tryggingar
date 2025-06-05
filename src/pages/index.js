@@ -59,7 +59,7 @@ const DepositCalculator = () => {
       faq2Title: 'Do I have to pay tax on the interest?',
       faq2Text: 'Yes, capital gains tax (Fjármagnstekjuskattur) of 22% is automatically applied to the interest earned on your deposit. This calculator shows both gross interest and net interest after tax. Whether the tax burden of this interest is on the tenant or the landlord is a matter of legal interpretation.',
       faq3Title: 'What if my landlord doesn\'t pay me the correct interest?',
-      faq3Text: 'According to Article 40 of the Icelandic Rent Act (Húsaleigulög nr. 36/1994), landlords are legally required to keep deposits in separate accounts with the highest available interest rate. If your landlord hasn\'t paid the correct interest, you may have grounds for a claim. The landlord has four weeks from the end of the rental period to pay the interest owed. If they fail to do so, you can take legal action to recover the amount, and claim "dráttarvextir" (default interest) from the date the interest was due.',
+      faq3Text: 'According to Article 40 of the Icelandic Rent Act (Húsaleigulög nr. 36/1994), landlords are legally required to keep deposits in separate accounts with the highest available interest rate. If your landlord hasn\'t paid the correct interest, you may have grounds for a claim. The landlord has four weeks from the end of the rental period to pay back the deposit. If they fail to do so, you can take legal action to recover the amount, and claim "dráttarvextir" (default interest) from the date the interest was due.',
       faq4Title: 'How often do interest rates change?',
       faq4Text: 'The Central Bank of Iceland periodically reviews and adjusts its key interest rate. These changes directly affect the interest rate that should be applied to your deposit. This calculator automatically accounts for all rate changes during your rental period. The tool does not provide real-time updates, so it is advisable to check the Central Bank\'s website for the latest rates.',
       footerText1: 'Created and hosted by Gamithra.',
@@ -73,8 +73,8 @@ const DepositCalculator = () => {
       endDate: 'Lokadagur',
       calculateInterest: 'Reikna vexti',
       enterDepositAmount: 'Settu inn upphæð tryggingarfjár',
-      rateCalculationMethod: 'Aðferð við útreikning vaxta',
-      rateCalculationText: 'Samkvæmt íslenskum húsaleigulögum skal tryggingarfé geymt á reikningi með hæstu fáanlegu vöxtum. Þessi reiknivél byggir á þeirri forsendu að hæstu vextirnir séu stýrivextir Seðlabanka Íslands að frádregnum 0,60%, sem samsvarar yfirleitt vöxtum á hæstu reikningum á markaðnum, eins og hjá Auði sparireikningi.',
+      rateCalculationMethod: 'Útreikningur vaxta',
+      rateCalculationText: 'Samkvæmt íslenskum húsaleigulögum skal tryggingarfé geymt á reikningi með hæstu fáanlegu vöxtum. Þessi reiknivél byggir á þeirri forsendu að hæstu vextirnir séu stýrivextir Seðlabanka Íslands að frádregnum 0,60%, sem samsvarar yfirleitt vöxtum á hæstu reikningum á markaðnum, eins og á óbundnum vaxtarreikningi hjá Auði.',
       interestCalculation: 'Vaxtareikningur',
       enterDepositDetails: 'Settu inn upplýsingar um tryggingarfé til að reikna vexti',
       netInterestEarned: 'Vaxtatekjur eftir skatt',
@@ -87,17 +87,17 @@ const DepositCalculator = () => {
       capitalGainsTax: 'Fjármagnstekjuskattur',
       netInterest: 'Vaxtatekjur eftir skatt:',
       effectiveAnnualRate: 'Raunávöxtun á ári (eftir skatt):',
-      interestRatePeriods: 'Tímabil vaxta',
+      interestRatePeriods: 'Þróun vaxta',
       faq1Title: 'Hvernig eru vextir af tryggingarfé reiknaðir?',
-      faq1Text: 'Samkvæmt íslenskum lögum eru vextir reiknaðir út frá stýrivöxtum Seðlabanka Íslands að frádregnum 0,60%, sem endurspeglar yfirleitt hæstu vexti á markaðnum. Reiknivélin beitir viðeigandi vöxtum fyrir hvert tímabil og tekur tillit til vaxta breytinga á leigutímanum.',
+      faq1Text: 'Vextirnir eru reiknaðir út frá stýrivöxtum Seðlabanka Íslands að frádregnum 0,60%, sem endurspeglar yfirleitt hæstu vexti á sparnaðarreikningum á markaðnum. Reiknivélin beitir viðeigandi vöxtum fyrir hvert tímabil og tekur tillit til vaxtabreytinga á leigutímanum.',
       faq2Title: 'Þarf ég að greiða skatt af vöxtunum?',
       faq2Text: 'Já, fjármagnstekjuskattur (22%) er sjálfkrafa dreginn frá vöxtum af tryggingarfé. Þessi reiknivél sýnir bæði heildarvexti og vaxtatekjur eftir skatt. Hvort leigjandi eða leigusali beri skattskylduna er lögfræðilegt álitaefni.',
       faq3Title: 'Hvað ef leigusali greiðir ekki rétta vexti?',
-      faq3Text: 'Samkvæmt 40. gr. húsaleigulaga nr. 36/1994 ber leigusala að geyma tryggingarfé á sérstökum reikningi með hæstu mögulegu vöxtum. Ef leigusali hefur ekki greitt rétta vexti getur leigjandi átt rétt á kröfu. Leigusali hefur fjórar vikur frá lokum leigutímans til að greiða vextina. Ef hann gerir það ekki, getur leigjandi leitað réttar síns og krafist dráttarvaxta frá þeim degi sem greiðslan átti að berast.',
+      faq3Text: 'Samkvæmt 40. gr. húsaleigulaga nr. 36/1994 ber leigusala að geyma tryggingarfé á sérstökum reikningi með hæstu mögulegu vöxtum. Ef leigusali hefur ekki greitt rétta vexti hefur leigjandinn rétt á að leggja fram kæru. Til upplýsinga hefur leigusali fjórar vikur eftir útflutningardag til að gera kröfu í tryggingarféð. Ef hann gerir það ekki, getur leigjandi leitað réttar síns og krafist dráttarvaxta frá þeim degi sem greiðslan átti að berast.',
       faq4Title: 'Hversu oft breytast vextir?',
       faq4Text: 'Seðlabanki Íslands endurskoðar og breytir stýrivöxtum reglulega. Þessar breytingar hafa bein áhrif á vexti sem eiga að gilda um tryggingarfé. Reiknivélin tekur sjálfkrafa mið af öllum vaxtabreytingum á leigutímanum. Tólið veitir ekki rauntímaupplýsingar, svo það er ráðlagt að skoða heimasíðu Seðlabankans fyrir nýjustu vexti.',
-      footerText1: 'Búið til og hýst af Gamithra.',
-      footerText2: 'Þetta tól er eingöngu til upplýsinga; leitaðu lögfræðilegrar ráðgjafar vegna sérstakra mála.'
+      footerText1: 'Reiknivélin er þróuð og hýst af Gamithru.',
+      footerText2: 'Þetta tól er eingöngu til upplýsinga, leitaðu aðstoðar vegna sérstakra mála hjá lögfræðingi eða Leigjendasamtökunum.'
     }
     
   };
@@ -478,13 +478,13 @@ const DepositCalculator = () => {
                   {/* Summary Cards */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                      <p className="text-sm font-medium text-green-800">Net interest earned</p>
+                      <p className="text-sm font-medium text-green-800">{translations[language].netInterestEarned}</p>
                       <p className="text-2xl font-bold text-green-900">
                         {formatCurrency(results.netInterest)}
                       </p>
                     </div>
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <p className="text-sm font-medium text-blue-800">Total amount</p>
+                      <p className="text-sm font-medium text-blue-800">{translations[language].totalAmount}</p>
                       <p className="text-2xl font-bold text-blue-900">
                         {formatCurrency(results.totalAmount)}
                       </p>
@@ -494,31 +494,31 @@ const DepositCalculator = () => {
                   {/* Detailed Breakdown */}
                   <div className="border rounded-lg overflow-hidden">
                     <div className="bg-gray-50 px-4 py-3 border-b">
-                      <h3 className="font-medium text-gray-900">Detailed breakdown</h3>
+                      <h3 className="font-medium text-gray-900">{translations[language].detailedBreakdown}</h3>
                     </div>
                     <div className="p-4 space-y-3">
                       <div className="flex justify-between">
-                        <span className="text-gray-800">Original deposit:</span>
+                        <span className="text-gray-800">{translations[language].originalDeposit}</span>
                         <span className="font-medium text-gray-900">{formatCurrency(results.principal)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-800">Duration:</span>
-                        <span className="font-medium text-gray-900">{results.daysDiff} days</span>
+                        <span className="text-gray-800">{translations[language].duration}</span>
+                        <span className="font-medium text-gray-900">{results.daysDiff} {translations[language].days}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-800">Gross interest (variable rates):</span>
+                        <span className="text-gray-800">{translations[language].grossInterest}</span>
                         <span className="font-medium text-gray-900">{formatCurrency(results.grossInterest)}</span>
                       </div>
                       <div className="flex justify-between text-red-600">
-                        <span>Fjármagnstekjuskattur ({CAPITAL_GAINS_TAX}%):</span>
+                        <span>{translations[language].capitalGainsTax} ({CAPITAL_GAINS_TAX}%):</span>
                         <span className="font-medium text-gray-900">-{formatCurrency(results.tax)}</span>
                       </div>
                       <div className="border-t pt-3 flex justify-between text-lg font-semibold">
-                        <span className="text-gray-900">Net interest earned:</span>
+                        <span className="text-gray-900">{translations[language].netInterest}</span>
                         <span className="text-green-700 font-bold">{formatCurrency(results.netInterest)}</span>
                       </div>
                       <div className="flex justify-between text-sm text-gray-800">
-                        <span>Effective annual rate (after tax):</span>
+                        <span>{translations[language].effectiveAnnualRate}</span>
                         <span className="text-gray-900">{results.effectiveRate.toFixed(2)}%</span>
                       </div>
                     </div>
@@ -528,7 +528,7 @@ const DepositCalculator = () => {
                   {results.rateBreakdown && results.rateBreakdown.length > 1 && (
                     <div className="border rounded-lg overflow-hidden">
                       <div className="bg-gray-50 px-4 py-3 border-b">
-                        <h3 className="font-medium text-gray-900">Interest rate periods</h3>
+                        <h3 className="font-medium text-gray-900">{translations[language].interestRatePeriods}</h3>
                       </div>
                       <div className="p-4 space-y-3">
                         {results.rateBreakdown.map((period, index) => (
