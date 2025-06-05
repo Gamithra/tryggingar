@@ -1,5 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator, Calendar, TrendingUp, Info, RefreshCw } from 'lucide-react';
+import { CENTRAL_BANK_CSV } from './centralBankRates.js';
+
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+// I18n Provider wrapper component
+const I18nProvider = ({ locale, children }) => {
+  useEffect(() => {
+    // Set the document language
+    document.documentElement.lang = locale;
+  }, [locale]);
+
+  return <div data-locale={locale}>{children}</div>;
+};
 
 const DepositCalculator = () => {
   const [depositAmount, setDepositAmount] = useState('');
@@ -12,110 +25,106 @@ const DepositCalculator = () => {
   const [error, setError] = useState(null);
 
   const CAPITAL_GAINS_TAX = 22; // 22% fjármagnstekjuskattur
+  const DEPOSIT_RATE_MARGIN = 0.60; // Deposit rate = Key rate - 0.60%
+  const LOCALE = 'en-GB'; // Use British locale for DD/MM/YYYY formatting
 
-  // Bank APIs and configurations
-  const BANK_APIS = {
-    arion: {
-      name: 'Arion banki',
-      baseUrl: 'https://www.arionbanki.is/api/v1',
-      endpoints: {
-        interestRates: '/interestrates',
-        categories: '/interestrates/categories'
-      }
-    },
-    audur: {
-      name: 'Auður (Kvika)',
-      manualRates: true
-    }
+  // Helper function to format dates for display (DD/MM/YYYY)
+  const formatDateDisplay = (date) => {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return dateObj.toLocaleDateString(LOCALE); // Use en-GB for DD/MM/YYYY format
   };
 
-  // Fetch current interest rates from multiple banks
+  // Fetch and process Central Bank rates
   const fetchCurrentRates = async () => {
     setLoading(true);
     setError(null);
 
-    const rates = {};
-
     try {
-      // Fetch Arion rates
-      const arionResponse = await fetch(`${BANK_APIS.arion.baseUrl}${BANK_APIS.arion.endpoints.interestRates}`);
-      if (arionResponse.ok) {
-        const arionData = await arionResponse.json();
+      // Parse the Central Bank data more carefully
+      const lines = CENTRAL_BANK_CSV.trim().split('\n');
+      const allRateData = [];
 
-        // Find savings account rates (sparnaðarreikningur equivalent)
-        const savingsRates = arionData.interest_rate?.filter(rate =>
-          rate.name?.toLowerCase().includes('sparnaður') ||
-          rate.description?.toLowerCase().includes('sparnaður') ||
-          rate.name?.toLowerCase().includes('savings')
-        ) || [];
+      // Skip header row and process all data
+      for (let i = 1; i < lines.length; i++) {
+        const [dateStr, overnightRate, currentAccountRate, keyInterestRate] = lines[i].split(',');
 
-        if (savingsRates.length > 0) {
-          // Get the highest rate
-          const highestArionRate = Math.max(...savingsRates.map(rate =>
-            parseFloat(rate.rate?.value_to || rate.rate?.value_from || 0)
-          ));
+        if (dateStr && keyInterestRate) {
+          // Convert DD.MM.YYYY to YYYY-MM-DD
+          const [day, month, year] = dateStr.split('.');
+          const isoDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
 
-          rates.arion = {
-            rate: highestArionRate,
-            name: BANK_APIS.arion.name,
-            lastUpdated: arionData.publication_date,
-            products: savingsRates
-          };
+          // Highest deposit rate = Key interest rate - 0.60%
+          const keyRate = parseFloat(keyInterestRate);
+          const depositRate = Math.max(0, keyRate - DEPOSIT_RATE_MARGIN);
+
+          allRateData.push({
+            date: isoDate,
+            keyRate: keyRate,
+            depositRate: depositRate
+          });
         }
       }
 
-      // Add manual Auður data (since they don't have a public API)
-      rates.audur = {
-        rate: 6.90, // Current rate from website
-        name: BANK_APIS.audur.name,
-        lastUpdated: new Date().toISOString(),
-        manual: true
-      };
+      // Sort by date to ensure chronological order
+      allRateData.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-      // Load historical data from state or initialize
-      let history = rateHistory.length > 0 ? [...rateHistory] : [
-        { date: '2023-06-02', rates: { audur: 8.25 } },
-        { date: '2024-01-01', rates: { audur: 7.50 } },
-        { date: '2024-06-01', rates: { audur: 7.00 } },
-        { date: '2025-01-01', rates: { audur: 6.90 } }
-      ];
+      if (allRateData.length === 0) {
+        throw new Error('No rate data available');
+      }
 
-      // Add current rates to history if they're different from the last entry
-      const today = new Date().toISOString().split('T')[0];
-      const lastEntry = history[history.length - 1];
+      // Get the most recent rate
+      const latestRate = allRateData[allRateData.length - 1];
 
-      Object.keys(rates).forEach(bank => {
-        const currentRate = rates[bank].rate;
-        if (!lastEntry || lastEntry.date !== today || lastEntry.rates[bank] !== currentRate) {
-          // Update or add today's entry
-          const todayIndex = history.findIndex(entry => entry.date === today);
-          if (todayIndex >= 0) {
-            history[todayIndex].rates[bank] = currentRate;
-          } else {
-            history.push({
-              date: today,
-              rates: { [bank]: currentRate }
-            });
-          }
+      setCurrentRates({
+        arion: {
+          rate: latestRate.depositRate,
+          name: 'Highest Available (CBI Key Rate - 0.60%)',
+          lastUpdated: latestRate.date,
+          selectedAccount: {
+            name: 'Vöxtur óbundinn - 1. þrep (calculated from CBI rate)',
+            description: `Based on Central Bank key rate (${latestRate.keyRate}%) minus 0.60%`
+          },
+          calculatedFromCBI: true,
+          keyRate: latestRate.keyRate
         }
       });
 
-      setCurrentRates(rates);
+      // Create rate history with EVERY rate change (no filtering)
+      const history = [];
+      let previousKeyRate = null;
+
+      for (const entry of allRateData) {
+        // Include this entry if it's the first one OR the key rate changed
+        if (previousKeyRate === null || entry.keyRate !== previousKeyRate) {
+          history.push({
+            date: entry.date,
+            rates: { arion: entry.depositRate },
+            keyRate: entry.keyRate
+          });
+
+          console.log(`Rate change: ${entry.date} - Key: ${entry.keyRate}% - Deposit: ${entry.depositRate}%`);
+          previousKeyRate = entry.keyRate;
+        }
+      }
+
       setRateHistory(history);
+      console.log(`Loaded ${history.length} rate changes from Central Bank data`);
 
     } catch (err) {
-      console.error('Error fetching rates:', err);
-      setError('Failed to fetch current interest rates. Using fallback data.');
+      console.error('Error parsing Central Bank data:', err);
+      setError('Failed to parse Central Bank rate data. Using fallback rates.');
 
-      // Fallback to manual data
+      // Fallback rates
       setCurrentRates({
-        audur: { rate: 6.90, name: 'Auður (Kvika)', manual: true }
+        arion: {
+          rate: 6.9,
+          name: 'Fallback Rate',
+          selectedAccount: { name: 'Fallback - Vöxtur óbundinn' }
+        }
       });
       setRateHistory([
-        { date: '2023-06-02', rates: { audur: 8.25 } },
-        { date: '2024-01-01', rates: { audur: 7.50 } },
-        { date: '2024-06-01', rates: { audur: 7.00 } },
-        { date: '2025-01-01', rates: { audur: 6.90 } }
+        { date: '2024-01-01', rates: { arion: 6.9 } },
+        { date: '2025-01-01', rates: { arion: 6.9 } }
       ]);
     }
 
@@ -133,23 +142,15 @@ const DepositCalculator = () => {
 
     if (!applicableEntry) {
       // Fallback to current rates
-      const highestCurrent = Object.values(currentRates).reduce((highest, bank) =>
-        bank.rate > highest.rate ? bank : highest, { rate: 0 });
-      return { rate: highestCurrent.rate, bank: 'audur' };
+      const arionRate = currentRates.arion?.rate || 6.9;
+      return { rate: arionRate, bank: 'arion' };
     }
 
-    // Find the bank with highest rate on that date
-    let highestRate = 0;
-    let highestBank = 'audur';
-
-    Object.entries(applicableEntry.rates).forEach(([bank, rate]) => {
-      if (rate > highestRate) {
-        highestRate = rate;
-        highestBank = bank;
-      }
-    });
-
-    return { rate: highestRate, bank: highestBank };
+    return {
+      rate: applicableEntry.rates.arion,
+      bank: 'arion',
+      keyRate: applicableEntry.keyRate
+    };
   };
 
   const calculateInterestWithVariableRates = () => {
@@ -174,7 +175,8 @@ const DepositCalculator = () => {
       if (entryDate >= start && entryDate <= end) {
         allRateChanges.push({
           date: entryDate,
-          rates: entry.rates
+          rates: entry.rates,
+          keyRate: entry.keyRate
         });
       }
     });
@@ -184,7 +186,7 @@ const DepositCalculator = () => {
 
     while (currentDate < end) {
       // Get the applicable rate for the current period
-      const { rate: rateForPeriod, bank: bankUsed } = getHighestRateForDate(currentDate);
+      const { rate: rateForPeriod, bank: bankUsed, keyRate } = getHighestRateForDate(currentDate);
 
       // Find the end of this rate period
       let periodEnd = new Date(end);
@@ -211,6 +213,7 @@ const DepositCalculator = () => {
           days: periodDays,
           rate: rateForPeriod,
           bank: bankUsed,
+          keyRate: keyRate,
           interest: periodInterest,
           startAmount: currentAmount,
           endAmount: newAmount
@@ -258,7 +261,7 @@ const DepositCalculator = () => {
   };
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('is-IS', {
+    return new Intl.NumberFormat(LOCALE, {
       style: 'currency',
       currency: 'ISK',
       minimumFractionDigits: 0,
@@ -269,211 +272,237 @@ const DepositCalculator = () => {
   const today = new Date().toISOString().split('T')[0];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Leigugjald Vaxta Reiknivél
-          </h1>
-          <p className="text-lg text-gray-600 mb-4">
-            Rental Deposit Interest Calculator for Iceland
-          </p>
-          <div className="flex items-center justify-center gap-4">
-            <div className="inline-flex items-center bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm">
-              <TrendingUp className="w-4 h-4 mr-2" />
-              {loading ? 'Loading rates...' :
-                `Highest rate: ${getCurrentHighestRate().rate}% (${getCurrentHighestRate().bank}) - before ${CAPITAL_GAINS_TAX}% tax`}
-            </div>
+    <I18nProvider locale="en-GB">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
+        <div className="max-w-4xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">
+              Leigugjald Vaxta Reiknivél
+            </h1>
+            <p className="text-lg text-gray-600 mb-4">
+              Rental Deposit Interest Calculator for Iceland
+            </p>
+            <div className="flex flex-col items-center gap-4">
+              <div className="inline-flex items-center bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm">
+                <TrendingUp className="w-4 h-4 mr-2" />
+                {loading ? 'Loading rates...' :
+                  `Highest rate: ${getCurrentHighestRate().rate}% - before ${CAPITAL_GAINS_TAX}% tax`}
+              </div>
 
-            <button
-              onClick={fetchCurrentRates}
-              disabled={loading}
-              className="inline-flex items-center bg-green-100 hover:bg-green-200 text-green-800 px-3 py-2 rounded-full text-sm transition-colors disabled:opacity-50"
-            >
-              <RefreshCw className={`w-4 h-4 mr-1 ${loading ? 'animate-spin' : ''}`} />
-              Update Rates
-            </button>
-          </div>
-
-          {error && (
-            <div className="mt-2 inline-flex items-center bg-amber-100 text-amber-800 px-4 py-2 rounded-full text-sm">
-              <Info className="w-4 h-4 mr-2" />
-              {error}
-            </div>
-          )}
-        </div>
-
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Input Form */}
-          <div className="bg-white rounded-2xl shadow-xl p-8">
-            <div className="flex items-center mb-6">
-              <Calculator className="w-6 h-6 text-blue-600 mr-3" />
-              <h2 className="text-2xl font-semibold text-gray-900">Calculate Interest</h2>
-            </div>
-
-            <div className="space-y-6">
-              {/* Deposit Amount */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Deposit Amount (ISK)
-                </label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    value={depositAmount}
-                    onChange={(e) => setDepositAmount(e.target.value)}
-                    placeholder="Enter deposit amount"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
-                  />
-                  <span className="absolute right-3 top-3 text-gray-500">kr</span>
+              {!loading && currentRates.arion?.calculatedFromCBI && (
+                <div className="inline-flex items-center bg-green-100 text-green-800 px-3 py-2 rounded-full text-sm">
+                  <Info className="w-4 h-4 mr-1" />
+                  CBI Key Rate: {currentRates.arion.keyRate}% → Deposit Rate: {currentRates.arion.rate}%
                 </div>
-              </div>
+              )}
 
-              {/* Start Date */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Calendar className="w-4 h-4 inline mr-1" />
-                  Start Date
-                </label>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  max={today}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              {/* End Date */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Calendar className="w-4 h-4 inline mr-1" />
-                  End Date
-                </label>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  min={startDate}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+              <button
+                onClick={fetchCurrentRates}
+                disabled={loading}
+                className="inline-flex items-center bg-green-100 hover:bg-green-200 text-green-800 px-3 py-2 rounded-full text-sm transition-colors disabled:opacity-50"
+              >
+                <RefreshCw className={`w-4 h-4 mr-1 ${loading ? 'animate-spin' : ''}`} />
+                Reload Rates
+              </button>
             </div>
 
-            {/* Legal Info */}
-            <div className="mt-8 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-              <div className="flex items-start">
-                <Info className="w-5 h-5 text-amber-600 mr-2 mt-0.5 flex-shrink-0" />
-                <div className="text-sm text-amber-800">
-                  <p className="font-medium mb-1">Icelandic Law Requirement</p>
-                  <p>According to Icelandic rental law, deposits must be stored in the highest interest savings account available. This calculator compares rates from multiple banks and uses the highest available rate for each time period.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Results */}
-          <div className="bg-white rounded-2xl shadow-xl p-8">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-6">Interest Calculation</h2>
-
-            {results ? (
-              <div className="space-y-6">
-                {/* Summary Cards */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <p className="text-sm font-medium text-green-800">Net Interest Earned</p>
-                    <p className="text-2xl font-bold text-green-900">
-                      {formatCurrency(results.netInterest)}
-                    </p>
-                  </div>
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <p className="text-sm font-medium text-blue-800">Total Amount</p>
-                    <p className="text-2xl font-bold text-blue-900">
-                      {formatCurrency(results.totalAmount)}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Detailed Breakdown */}
-                <div className="border rounded-lg overflow-hidden">
-                  <div className="bg-gray-50 px-4 py-3 border-b">
-                    <h3 className="font-medium text-gray-900">Detailed Breakdown</h3>
-                  </div>
-                  <div className="p-4 space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Original deposit:</span>
-                      <span className="font-medium">{formatCurrency(results.principal)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Duration:</span>
-                      <span className="font-medium">{results.daysDiff} days</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Gross interest (variable rates):</span>
-                      <span className="font-medium">{formatCurrency(results.grossInterest)}</span>
-                    </div>
-                    <div className="flex justify-between text-red-600">
-                      <span>Fjármagnstekjuskattur ({CAPITAL_GAINS_TAX}%):</span>
-                      <span className="font-medium">-{formatCurrency(results.tax)}</span>
-                    </div>
-                    <div className="border-t pt-3 flex justify-between text-lg font-semibold">
-                      <span>Net interest earned:</span>
-                      <span className="text-green-600">{formatCurrency(results.netInterest)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm text-gray-600">
-                      <span>Effective annual rate (after tax):</span>
-                      <span>{results.effectiveRate.toFixed(2)}%</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Rate Breakdown */}
-                {results.rateBreakdown && results.rateBreakdown.length > 1 && (
-                  <div className="border rounded-lg overflow-hidden">
-                    <div className="bg-gray-50 px-4 py-3 border-b">
-                      <h3 className="font-medium text-gray-900">Interest Rate Periods</h3>
-                    </div>
-                    <div className="p-4 space-y-3">
-                      {results.rateBreakdown.map((period, index) => (
-                        <div key={index} className="bg-gray-50 p-3 rounded">
-                          <div className="flex justify-between items-center mb-2">
-                            <span className="font-medium text-sm">
-                              {period.startDate.toLocaleDateString('is-IS')} - {period.endDate.toLocaleDateString('is-IS')}
-                            </span>
-                            <div className="text-right">
-                              <span className="text-sm font-medium text-blue-600">{period.rate}%</span>
-                              <div className="text-xs text-gray-500">{currentRates[period.bank]?.name || period.bank}</div>
-                            </div>
-                          </div>
-                          <div className="text-xs text-gray-600 space-y-1">
-                            <div className="flex justify-between">
-                              <span>{period.days} days</span>
-                              <span>Interest: {formatCurrency(period.interest)}</span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <Calculator className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">Enter deposit details to calculate interest</p>
+            {error && (
+              <div className="mt-2 inline-flex items-center bg-amber-100 text-amber-800 px-4 py-2 rounded-full text-sm">
+                <Info className="w-4 h-4 mr-2" />
+                {error}
               </div>
             )}
           </div>
-        </div>
 
-        {/* Footer */}
-        <div className="text-center mt-12 text-sm text-gray-600">
-          <p>Interest rates are fetched from bank APIs and updated automatically. Historical data ensures accurate calculations.</p>
-          <p className="mt-1">This tool is for informational purposes. Please consult legal advice for specific cases.</p>
+          <div className="grid lg:grid-cols-2 gap-8">
+            {/* Input Form */}
+            <div className="bg-white rounded-2xl shadow-xl p-8">
+              <div className="flex items-center mb-6">
+                <Calculator className="w-6 h-6 text-blue-600 mr-3" />
+                <h2 className="text-2xl font-semibold text-gray-900">Calculate Interest</h2>
+              </div>
+
+              <div className="space-y-6">
+                {/* Deposit Amount */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Deposit Amount (ISK)
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={depositAmount}
+                      onChange={(e) => setDepositAmount(e.target.value)}
+                      placeholder="Enter deposit amount"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
+                    />
+                    <span className="absolute right-3 top-3 text-gray-500">kr</span>
+                  </div>
+                </div>
+
+                {/* Start Date */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <Calendar className="w-4 h-4 inline mr-1" />
+                    Start Date
+                  </label>
+                  <DatePicker
+                    selected={startDate ? new Date(startDate) : null}
+                    onChange={(date) => {
+                      if (date) {
+                        const isoDate = date.toISOString().split('T')[0];
+                        setStartDate(isoDate);
+                      } else {
+                        setStartDate('');
+                      }
+                    }}
+                    dateFormat="dd/MM/yyyy"
+                    placeholderText="DD/MM/YYYY"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>               
+                
+                {/* End Date */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <Calendar className="w-4 h-4 inline mr-1" />
+                    End Date
+                  </label>
+                  <DatePicker
+                    selected={endDate ? new Date(endDate) : null}
+                    onChange={(date) => {
+                      if (date) {
+                        const isoDate = date.toISOString().split('T')[0];
+                        setEndDate(isoDate);
+                      } else {
+                        setEndDate('');
+                      }
+                    }}
+                    dateFormat="dd/MM/yyyy"
+                    placeholderText="DD/MM/YYYY"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>    
+
+              </div>
+
+              {/* Legal Info */}
+              <div className="mt-8 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <div className="flex items-start">
+                  <Info className="w-5 h-5 text-amber-600 mr-2 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-amber-800">
+                    <p className="font-medium mb-1">Rate Calculation Method</p>
+                    <p>According to Icelandic rental law, deposits must be stored in the highest interest savings account available. This calculator assumes the highest available rate is the Central Bank's key interest rate minus 0.60%, which reflects typical bank margins on deposit accounts.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Results */}
+            <div className="bg-white rounded-2xl shadow-xl p-8">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-6">Interest Calculation</h2>
+
+              {results ? (
+                <div className="space-y-6">
+                  {/* Summary Cards */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <p className="text-sm font-medium text-green-800">Net Interest Earned</p>
+                      <p className="text-2xl font-bold text-green-900">
+                        {formatCurrency(results.netInterest)}
+                      </p>
+                    </div>
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <p className="text-sm font-medium text-blue-800">Total Amount</p>
+                      <p className="text-2xl font-bold text-blue-900">
+                        {formatCurrency(results.totalAmount)}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Detailed Breakdown */}
+                  <div className="border rounded-lg overflow-hidden">
+                    <div className="bg-gray-50 px-4 py-3 border-b">
+                      <h3 className="font-medium text-gray-900">Detailed Breakdown</h3>
+                    </div>
+                    <div className="p-4 space-y-3">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Original deposit:</span>
+                        <span className="font-medium">{formatCurrency(results.principal)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Duration:</span>
+                        <span className="font-medium">{results.daysDiff} days</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Gross interest (variable rates):</span>
+                        <span className="font-medium">{formatCurrency(results.grossInterest)}</span>
+                      </div>
+                      <div className="flex justify-between text-red-600">
+                        <span>Fjármagnstekjuskattur ({CAPITAL_GAINS_TAX}%):</span>
+                        <span className="font-medium">-{formatCurrency(results.tax)}</span>
+                      </div>
+                      <div className="border-t pt-3 flex justify-between text-lg font-semibold">
+                        <span>Net interest earned:</span>
+                        <span className="text-green-600">{formatCurrency(results.netInterest)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm text-gray-600">
+                        <span>Effective annual rate (after tax):</span>
+                        <span>{results.effectiveRate.toFixed(2)}%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Rate Breakdown */}
+                  {results.rateBreakdown && results.rateBreakdown.length > 1 && (
+                    <div className="border rounded-lg overflow-hidden">
+                      <div className="bg-gray-50 px-4 py-3 border-b">
+                        <h3 className="font-medium text-gray-900">Interest Rate Periods</h3>
+                      </div>
+                      <div className="p-4 space-y-3">
+                        {results.rateBreakdown.map((period, index) => (
+                          <div key={index} className="bg-gray-50 p-3 rounded">
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="font-medium text-sm">
+                                {formatDateDisplay(period.startDate)} - {formatDateDisplay(period.endDate)}
+                              </span>
+                              <div className="text-right">
+                                <span className="text-sm font-medium text-blue-600">{period.rate}%</span>
+                                {period.keyRate && (
+                                  <div className="text-xs text-gray-500">CBI: {period.keyRate}%</div>
+                                )}
+                              </div>
+                            </div>
+                            <div className="text-xs text-gray-600 space-y-1">
+                              <div className="flex justify-between">
+                                <span>{period.days} days</span>
+                                <span>Interest: {formatCurrency(period.interest)}</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Calculator className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500">Enter deposit details to calculate interest</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="text-center mt-12 text-sm text-gray-600">
+            <p>Interest rates calculated from Central Bank of Iceland key interest rates with 0.60% margin deduction.</p>
+            <p className="mt-1">This tool is for informational purposes. Please consult legal advice for specific cases.</p>
+          </div>
         </div>
       </div>
-    </div>
+    </I18nProvider>
   );
 };
 
