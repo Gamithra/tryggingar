@@ -273,15 +273,15 @@ const DepositCalculator = () => {
 
   return (
     <I18nProvider locale="en-GB">
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 p-6">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-gray-900 mb-2">
-              Leigugjald Vaxta Reiknivél
+              Leigugjald vaxta reiknivél
             </h1>
             <p className="text-lg text-gray-600 mb-4">
-              Rental Deposit Interest Calculator for Iceland
+              Rental deposit interest calculator for Iceland
             </p>
             <div className="flex flex-col items-center gap-4">
               <div className="inline-flex items-center bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm">
@@ -303,7 +303,7 @@ const DepositCalculator = () => {
                 className="inline-flex items-center bg-green-100 hover:bg-green-200 text-green-800 px-3 py-2 rounded-full text-sm transition-colors disabled:opacity-50"
               >
                 <RefreshCw className={`w-4 h-4 mr-1 ${loading ? 'animate-spin' : ''}`} />
-                Reload Rates
+                Reload rates
               </button>
             </div>
 
@@ -320,24 +320,24 @@ const DepositCalculator = () => {
             <div className="bg-white rounded-2xl shadow-xl p-8">
               <div className="flex items-center mb-6">
                 <Calculator className="w-6 h-6 text-blue-600 mr-3" />
-                <h2 className="text-2xl font-semibold text-gray-900">Calculate Interest</h2>
+                <h2 className="text-2xl font-semibold text-gray-900">Calculate interest</h2>
               </div>
 
               <div className="space-y-6">
                 {/* Deposit Amount */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Deposit Amount (ISK)
+                    Deposit amount (ISK)
                   </label>
                   <div className="relative">
                     <input
-                      type="number"
+                      type="text"
                       value={depositAmount}
                       onChange={(e) => setDepositAmount(e.target.value)}
                       placeholder="Enter deposit amount"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg text-gray-900"
                     />
-                    <span className="absolute right-3 top-3 text-gray-500">kr</span>
+                    <span className="absolute right-3 top-3 text-gray-700">kr</span>
                   </div>
                 </div>
 
@@ -345,7 +345,7 @@ const DepositCalculator = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <Calendar className="w-4 h-4 inline mr-1" />
-                    Start Date
+                    Start date
                   </label>
                   <DatePicker
                     selected={startDate ? new Date(startDate) : null}
@@ -359,7 +359,7 @@ const DepositCalculator = () => {
                     }}
                     dateFormat="dd/MM/yyyy"
                     placeholderText="DD/MM/YYYY"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                   />
                 </div>               
                 
@@ -367,7 +367,7 @@ const DepositCalculator = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <Calendar className="w-4 h-4 inline mr-1" />
-                    End Date
+                    End date
                   </label>
                   <DatePicker
                     selected={endDate ? new Date(endDate) : null}
@@ -381,7 +381,7 @@ const DepositCalculator = () => {
                     }}
                     dateFormat="dd/MM/yyyy"
                     placeholderText="DD/MM/YYYY"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                   />
                 </div>    
 
@@ -392,7 +392,7 @@ const DepositCalculator = () => {
                 <div className="flex items-start">
                   <Info className="w-5 h-5 text-amber-600 mr-2 mt-0.5 flex-shrink-0" />
                   <div className="text-sm text-amber-800">
-                    <p className="font-medium mb-1">Rate Calculation Method</p>
+                    <p className="font-medium mb-1">Rate calculation method</p>
                     <p>According to Icelandic rental law, deposits must be stored in the highest interest savings account available. This calculator assumes the highest available rate is the Central Bank's key interest rate minus 0.60%, which reflects typical bank margins on deposit accounts.</p>
                   </div>
                 </div>
@@ -401,20 +401,20 @@ const DepositCalculator = () => {
 
             {/* Results */}
             <div className="bg-white rounded-2xl shadow-xl p-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-6">Interest Calculation</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-6">Interest calculation</h2>
 
               {results ? (
                 <div className="space-y-6">
                   {/* Summary Cards */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                      <p className="text-sm font-medium text-green-800">Net Interest Earned</p>
+                      <p className="text-sm font-medium text-green-800">Net interest earned</p>
                       <p className="text-2xl font-bold text-green-900">
                         {formatCurrency(results.netInterest)}
                       </p>
                     </div>
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <p className="text-sm font-medium text-blue-800">Total Amount</p>
+                      <p className="text-sm font-medium text-blue-800">Total amount</p>
                       <p className="text-2xl font-bold text-blue-900">
                         {formatCurrency(results.totalAmount)}
                       </p>
@@ -424,32 +424,32 @@ const DepositCalculator = () => {
                   {/* Detailed Breakdown */}
                   <div className="border rounded-lg overflow-hidden">
                     <div className="bg-gray-50 px-4 py-3 border-b">
-                      <h3 className="font-medium text-gray-900">Detailed Breakdown</h3>
+                      <h3 className="font-medium text-gray-900">Detailed breakdown</h3>
                     </div>
                     <div className="p-4 space-y-3">
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Original deposit:</span>
-                        <span className="font-medium">{formatCurrency(results.principal)}</span>
+                        <span className="text-gray-800">Original deposit:</span>
+                        <span className="font-medium text-gray-900">{formatCurrency(results.principal)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Duration:</span>
-                        <span className="font-medium">{results.daysDiff} days</span>
+                        <span className="text-gray-800">Duration:</span>
+                        <span className="font-medium text-gray-900">{results.daysDiff} days</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Gross interest (variable rates):</span>
-                        <span className="font-medium">{formatCurrency(results.grossInterest)}</span>
+                        <span className="text-gray-800">Gross interest (variable rates):</span>
+                        <span className="font-medium text-gray-900">{formatCurrency(results.grossInterest)}</span>
                       </div>
                       <div className="flex justify-between text-red-600">
                         <span>Fjármagnstekjuskattur ({CAPITAL_GAINS_TAX}%):</span>
-                        <span className="font-medium">-{formatCurrency(results.tax)}</span>
+                        <span className="font-medium text-gray-900">-{formatCurrency(results.tax)}</span>
                       </div>
                       <div className="border-t pt-3 flex justify-between text-lg font-semibold">
-                        <span>Net interest earned:</span>
-                        <span className="text-green-600">{formatCurrency(results.netInterest)}</span>
+                        <span className="text-gray-900">Net interest earned:</span>
+                        <span className="text-green-700 font-bold">{formatCurrency(results.netInterest)}</span>
                       </div>
-                      <div className="flex justify-between text-sm text-gray-600">
+                      <div className="flex justify-between text-sm text-gray-800">
                         <span>Effective annual rate (after tax):</span>
-                        <span>{results.effectiveRate.toFixed(2)}%</span>
+                        <span className="text-gray-900">{results.effectiveRate.toFixed(2)}%</span>
                       </div>
                     </div>
                   </div>
@@ -458,23 +458,23 @@ const DepositCalculator = () => {
                   {results.rateBreakdown && results.rateBreakdown.length > 1 && (
                     <div className="border rounded-lg overflow-hidden">
                       <div className="bg-gray-50 px-4 py-3 border-b">
-                        <h3 className="font-medium text-gray-900">Interest Rate Periods</h3>
+                        <h3 className="font-medium text-gray-900">Interest rate periods</h3>
                       </div>
                       <div className="p-4 space-y-3">
                         {results.rateBreakdown.map((period, index) => (
-                          <div key={index} className="bg-gray-50 p-3 rounded">
+                          <div key={index} className="bg-gray-100 p-3 rounded">
                             <div className="flex justify-between items-center mb-2">
-                              <span className="font-medium text-sm">
+                              <span className="font-medium text-sm text-gray-900">
                                 {formatDateDisplay(period.startDate)} - {formatDateDisplay(period.endDate)}
                               </span>
                               <div className="text-right">
                                 <span className="text-sm font-medium text-blue-600">{period.rate}%</span>
                                 {period.keyRate && (
-                                  <div className="text-xs text-gray-500">CBI: {period.keyRate}%</div>
+                                  <div className="text-xs text-gray-700">CBI: {period.keyRate}%</div>
                                 )}
                               </div>
                             </div>
-                            <div className="text-xs text-gray-600 space-y-1">
+                            <div className="text-xs text-gray-800 space-y-1">
                               <div className="flex justify-between">
                                 <span>{period.days} days</span>
                                 <span>Interest: {formatCurrency(period.interest)}</span>
