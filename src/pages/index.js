@@ -4,7 +4,7 @@ import { CENTRAL_BANK_CSV } from '../centralBankRates.js';
 
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-// I18n Provider wrapper component
+// I18n Provider wrapper component, probably unused
 const I18nProvider = ({ locale, children }) => {
   useEffect(() => {
     // Set the document language
@@ -27,7 +27,7 @@ const DepositCalculator = () => {
 
   const CAPITAL_GAINS_TAX = 22; // 22% fjármagnstekjuskattur
   const DEPOSIT_RATE_MARGIN = 0.60; // Deposit rate = Key rate - 0.60%
-  const LOCALE = language === 'en' ? 'en-GB' : 'is-IS'; // Use British locale for DD/MM/YYYY formatting
+  const LOCALE = language === 'en' ? 'en-GB' : 'is-IS'; // For DD/MM/YYYY formatting
   
   // Translation object
   const translations = {
@@ -105,8 +105,8 @@ const DepositCalculator = () => {
   // Update document title when language changes
   useEffect(() => {
     document.title = language === 'en' 
-      ? 'Rental Deposit Calculator' 
-      : 'Tryggingarfé Reiknivél';
+      ? 'Rental deposit calculator' 
+      : 'Reiknivél tryggingarfjár';
   }, [language]);
 
   // Helper function to format dates for display (DD/MM/YYYY)
@@ -121,11 +121,9 @@ const DepositCalculator = () => {
     setError(null);
 
     try {
-      // Parse the Central Bank data more carefully
       const lines = CENTRAL_BANK_CSV.trim().split('\n');
       const allRateData = [];
 
-      // Skip header row and process all data
       for (let i = 1; i < lines.length; i++) {
         const [dateStr, overnightRate, currentAccountRate, keyInterestRate] = lines[i].split(',');
 
@@ -170,12 +168,10 @@ const DepositCalculator = () => {
         }
       });
 
-      // Create rate history with EVERY rate change (no filtering)
       const history = [];
       let previousKeyRate = null;
 
       for (const entry of allRateData) {
-        // Include this entry if it's the first one OR the key rate changed
         if (previousKeyRate === null || entry.keyRate !== previousKeyRate) {
           history.push({
             date: entry.date,
@@ -195,7 +191,7 @@ const DepositCalculator = () => {
       console.error('Error parsing Central Bank data:', err);
       setError('Failed to parse Central Bank rate data. Using fallback rates.');
 
-      // Fallback rates
+      // Fallback rates (not used anymore, but kept for reference)
       setCurrentRates({
         arion: {
           rate: 6.9,
@@ -386,7 +382,7 @@ const DepositCalculator = () => {
           </div>
 
           <div className="grid lg:grid-cols-2 gap-8">
-            {/* Input Form */}
+            {/* Input form */}
             <div className="bg-white rounded-2xl p-8">
               <div className="flex items-center mb-6">
                 <Calculator className="w-6 h-6 text-blue-600 mr-3" />
@@ -394,7 +390,7 @@ const DepositCalculator = () => {
               </div>
 
               <div className="space-y-6">
-                {/* Deposit Amount */}
+                {/* Deposit amount */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     {translations[language].depositAmount}
@@ -411,7 +407,7 @@ const DepositCalculator = () => {
                   </div>
                 </div>
 
-                {/* Start Date */}
+                {/* Start date */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <Calendar className="w-4 h-4 inline mr-1" />
@@ -433,7 +429,7 @@ const DepositCalculator = () => {
                   />
                 </div>               
                 
-                {/* End Date */}
+                {/* End date */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <Calendar className="w-4 h-4 inline mr-1" />
@@ -457,7 +453,7 @@ const DepositCalculator = () => {
 
               </div>
 
-              {/* Legal Info */}
+              {/* Legal info */}
               <div className="mt-8 p-4 bg-amber-50 border border-amber-200 rounded-lg">
                 <div className="flex items-start">
                   <Info className="w-5 h-5 text-amber-600 mr-2 mt-0.5 flex-shrink-0" />
@@ -475,7 +471,7 @@ const DepositCalculator = () => {
 
               {results ? (
                 <div className="space-y-6">
-                  {/* Summary Cards */}
+                  {/* Summary cards */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                       <p className="text-sm font-medium text-green-800">{translations[language].netInterestEarned}</p>
@@ -491,7 +487,7 @@ const DepositCalculator = () => {
                     </div>
                   </div>
 
-                  {/* Detailed Breakdown */}
+                  {/* Detailed breakdown */}
                   <div className="border rounded-lg overflow-hidden">
                     <div className="bg-gray-50 px-4 py-3 border-b">
                       <h3 className="font-medium text-gray-900">{translations[language].detailedBreakdown}</h3>
@@ -524,7 +520,7 @@ const DepositCalculator = () => {
                     </div>
                   </div>
 
-                  {/* Rate Breakdown */}
+                  {/* Rate breakdown */}
                   {results.rateBreakdown && results.rateBreakdown.length > 1 && (
                     <div className="border rounded-lg overflow-hidden">
                       <div className="bg-gray-50 px-4 py-3 border-b">
@@ -565,7 +561,7 @@ const DepositCalculator = () => {
             </div>
           </div>
 
-          {/* FAQ Section */}
+          {/* FAQ section */}
           <div className="mt-12 bg-stone-100 rounded-2xl p-8">
             
             <div className="space-y-6">
