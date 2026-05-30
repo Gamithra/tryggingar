@@ -46,7 +46,6 @@ export default function SiteLayout({
           </div>
 
           <div className="brutal-card p-6 md:p-8">
-            <p className="brutal-tag mb-4">{c.tagline}</p>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-black leading-[0.95] tracking-tight uppercase max-w-4xl">
               {title}
             </h1>

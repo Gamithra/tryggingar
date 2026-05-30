@@ -8,7 +8,6 @@ export const translations = {
       switchToEnglish: 'Switch to English',
       langToggleIs: 'Íslenska',
       langToggleEn: 'English',
-      tagline: 'Iceland · Húsaleigulög 36/1994',
       footerHostedBy: 'Created and hosted by',
       footerAuthorName: 'Gamithra',
       footerDisclaimer:
@@ -107,7 +106,6 @@ export const translations = {
       switchToEnglish: 'Switch to English',
       langToggleIs: 'Íslenska',
       langToggleEn: 'English',
-      tagline: 'Ísland · Húsaleigulög 36/1994',
       footerHostedBy: 'Útbúið og hýst af',
       footerAuthorName: 'Gamithru',
       footerDisclaimer:
@@ -168,8 +166,8 @@ export const translations = {
         'Seðlabanki Íslands endurskoðar og breytir stýrivöxtum sínum reglulega. Þessar breytingar hafa bein áhrif á þá vexti sem ættu að reiknast á tryggingarféð þitt. Þessi reiknivél notar vaxtagögn sem sótt eru frá Seðlabankanum og Auði. Á síðunni um vaxtagögn má sjá hvenær þau voru síðast uppfærð.',
     },
     rates: {
-      documentTitle: 'Vaxtagögn',
-      title: 'Vaxtagögn',
+      documentTitle: 'Vextir',
+      title: 'Vextir',
       subtitle: 'Heimildir og söguleg gögn sem reiknivélin byggir á.',
       lastUpdated: 'Gögn síðast sótt',
       currentRates: 'Núverandi vextir',
