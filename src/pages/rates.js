@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ExternalLink } from 'lucide-react';
 import { formatFetchedAt } from '../lib/rates';
 import { getTranslations } from '../lib/translations';
+import { localeForLanguage, useLanguage } from '../lib/useLanguage';
 import SiteLayout from '../components/SiteLayout';
 
 function formatRate(value) {
@@ -14,12 +15,12 @@ function formatDate(dateStr, locale) {
 }
 
 export default function RatesPage() {
-  const [language, setLanguage] = useState('is');
+  const [language, setLanguage] = useLanguage();
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
 
   const { common, rates: t } = getTranslations(language);
-  const locale = language === 'en' ? 'en-GB' : 'is-IS';
+  const locale = localeForLanguage(language);
 
   useEffect(() => {
     document.title = t.documentTitle;

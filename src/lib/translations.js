@@ -58,7 +58,7 @@ export const translations = {
         'Yes, capital gains tax (Fjármagnstekjuskattur) of 22% is automatically applied to the interest earned on your deposit. This calculator shows both gross interest and net interest after tax. Whether the tax burden of this interest is on the tenant or the landlord is a matter of legal interpretation.',
       faq3Title: "What if my landlord doesn't pay me the correct interest?",
       faq3Text:
-        'According to Article 40 of the Icelandic Rent Act (Húsaleigulög nr. 36/1994), landlords are legally required to keep deposits in separate accounts with the highest available interest rate. If your landlord hasn\'t paid the correct interest, you may have grounds for a claim. The landlord has four weeks from the end of the rental period to pay back the deposit. If they fail to do so, you can take legal action to recover the amount, and claim "dráttarvextir" (default interest) from the date the interest was due.',
+        'According to Article 40 of the Icelandic Rent Act (Húsaleigulög nr. 36/1994), landlords are legally required to keep deposits in separate accounts with the highest available interest rate. If your landlord hasn\'t paid the correct interest, you may have grounds for a claim. The landlord has four weeks from the end of the rental period to pay back the deposit. If they fail to do so, you can take legal action to recover the amount, and claim "dráttarvextir" (default interest) from the date the interest was due. The author of the calculators recommends contacting the Rental Tenants\' Association (Leigjendasamtökin).',
       faq4Title: 'How often do interest rates change?',
       faq4Text:
         'The Central Bank of Iceland periodically reviews and adjusts its key interest rate. These changes directly affect the interest rate that should be applied to your deposit. This calculator uses rate data fetched from the CBI and Auður; see the rate data page for when it was last updated.',
@@ -112,11 +112,11 @@ export const translations = {
       documentTitle: 'Reiknivél leigutrygginga',
       title: 'Reiknivél leigutrygginga',
       subtitleIntro:
-        'Samkvæmt 40. gr. húsaleigulaga nr. 36/1994 skulu leigusalar varðveita tryggingarfé á hlutaðeigandi bankareikningi sem ber hæstu fáanlega vexti.',
+        'Samkvæmt 40. gr. húsaleigulaga nr. 36/1994 skulu leigusalar varðveita tryggingarfé á bankareikningi sem ber hæstu fáanlega vexti.',
       subtitleHighlight:
-        'Hins vegar misbrestur mörgum leigusölum að gera þetta, sem leiðir til þess að leigjendur verða af vaxtatekjum. Þá kveða lögin ekki nánar á um hvernig reikna skuli út vextina sem leigjanda ber.',
+        'Hins vegar gera margir leigusalar þetta ekki, sem leiðir til þess að leigjendur missa af vaxtatekjum sem þeir hafa rétt á. Lögin kveða ekki nánar á um hvernig reikna skuli út vextina sem ber að greiða.',
       subtitleOutro:
-        'Þessi reiknivél býður upp á einfalda leið til að áætla þá vexti sem leigusala ber að greiða.',
+        'Þessi reiknivél býður upp á einfalda leið til að áætla þá vexti.',
       depositAmount: 'Upphæð tryggingar (ISK)',
       startDate: 'Upphafsdagsetning',
       endDate: 'Lokadagsetning',
@@ -151,7 +151,7 @@ export const translations = {
         'Já, 22% fjármagnstekjuskattur er sjálfkrafa reiknaður af vaxtatekjum tryggingarinnar. Þessi reiknivél sýnir bæði heildarvexti og hreina vexti eftir skatt. Það er hins vegar háð lögfræðilegri túlkun hvort skattbyrðin af þessum vöxtum leggist á leigjanda eða leigusala.',
       faq3Title: 'Hvað ef leigusali greiðir mér ekki rétta vexti?',
       faq3Text:
-        'Samkvæmt 40. gr. húsaleigulaga nr. 36/1994 ber leigusala skylda til að varðveita tryggingarfé á aðskildum reikningi sem ber hæstu fáanlega vexti. Ef leigusali hefur ekki greitt rétta vexti gætir þú átt kröfurétt. Leigusali hefur fjórar vikur frá lokum leigutíma til að endurgreiða tryggingarféð. Geri hann það ekki, getur þú leitað réttar þíns til að endurheimta upphæðina og krafist dráttarvaxta frá þeim degi sem vextirnir féllu í gjalddaga.',
+        'Samkvæmt 40. gr. húsaleigulaga nr. 36/1994 ber leigusala skylda til að varðveita tryggingarfé á aðskildum reikningi sem ber hæstu fáanlega vexti. Ef leigusali hefur ekki greitt rétta vexti gætir þú átt kröfurétt. Leigusali hefur fjórar vikur frá lokum leigutíma til að endurgreiða tryggingarféð. Geri hann það ekki, getur þú leitað réttar þíns til að endurheimta upphæðina og krafist dráttarvaxta frá þeim degi sem vextirnir féllu í gjalddaga. Höfundur reiknivélarinnar mælir með að hafa samband við Leigjendasamtökin.',
       faq4Title: 'Hversu oft breytast vextirnir?',
       faq4Text:
         'Seðlabanki Íslands endurskoðar og breytir stýrivöxtum sínum reglulega. Þessar breytingar hafa bein áhrif á þá vexti sem ættu að reiknast á tryggingarféð þitt. Þessi reiknivél notar vaxtagögn sem sótt eru frá Seðlabankanum og Auði. Á síðunni um vaxtagögn má sjá hvenær þau voru síðast uppfærð.',
@@ -181,7 +181,7 @@ export const translations = {
       sourceCbi: 'Seðlabanki Íslands — stýrivextir (API)',
       sourceAudur: 'Auður — vaxtatafla',
       marginNote:
-        'Sögulegir útreikningar yfirfæra núverandi vaxtamun milli stýrivaxta Seðlabankans og óbundins sparireiknings Auðar á öll fyrri tímabil. Þetta fylgir markaðsbreytingum nokkuð vel, en er engu að síður nálgun.',
+        'Sögulegir útreikningar yfirfæra núverandi vaxtamun milli stýrivaxta Seðlabankans og óbundins sparireiknings Auðar á öll fyrri tímabil. Þessi nálgun fylgir markaðsbreytingum nokkuð vel.',
     },
   },
 };

@@ -3,19 +3,15 @@ import Link from 'next/link';
 import { Calculator, Calendar, Info } from 'lucide-react';
 import { formatFetchedAt, loadRatesData } from '../lib/rates.js';
 import { getTranslations } from '../lib/translations';
+import { localeForLanguage, useLanguage } from '../lib/useLanguage';
 import SiteLayout from '../components/SiteLayout';
 
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 // I18n Provider wrapper component, probably unused
-const I18nProvider = ({ locale, children }) => {
-  useEffect(() => {
-    // Set the document language
-    document.documentElement.lang = locale;
-  }, [locale]);
-
-  return <div data-locale={locale}>{children}</div>;
-};
+const I18nProvider = ({ locale, children }) => (
+  <div data-locale={locale}>{children}</div>
+);
 
 const DepositCalculator = () => {
   const [depositAmount, setDepositAmount] = useState('');
@@ -27,10 +23,10 @@ const DepositCalculator = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [rateMeta, setRateMeta] = useState(null);
-  const [language, setLanguage] = useState('en'); // 'en' for English, 'is' for Icelandic
+  const [language, setLanguage] = useLanguage();
 
   const CAPITAL_GAINS_TAX = 22; // 22% fjármagnstekjuskattur
-  const LOCALE = language === 'en' ? 'en-GB' : 'is-IS'; // For DD/MM/YYYY formatting
+  const LOCALE = localeForLanguage(language);
   const { common, calculator: t } = getTranslations(language);
 
   useEffect(() => {
@@ -211,7 +207,7 @@ const DepositCalculator = () => {
   const today = new Date().toISOString().split('T')[0];
 
   return (
-    <I18nProvider locale={language === 'en' ? 'en-GB' : 'is-IS'}>
+    <I18nProvider locale={LOCALE}>
       <SiteLayout
         language={language}
         setLanguage={setLanguage}
