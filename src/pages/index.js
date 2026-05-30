@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Calculator, Calendar, TrendingUp, Info, RefreshCw, Globe } from 'lucide-react';
-import { CENTRAL_BANK_CSV } from '../centralBankRates.js';
+import Link from 'next/link';
+import { Calculator, Calendar, Info, Globe } from 'lucide-react';
+import { formatFetchedAt, loadRatesData } from '../lib/rates.js';
 
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -23,10 +24,10 @@ const DepositCalculator = () => {
   const [currentRates, setCurrentRates] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [rateMeta, setRateMeta] = useState(null);
   const [language, setLanguage] = useState('en'); // 'en' for English, 'is' for Icelandic
 
   const CAPITAL_GAINS_TAX = 22; // 22% fjármagnstekjuskattur
-  const DEPOSIT_RATE_MARGIN = 0.60; // Deposit rate = Key rate - 0.60%
   const LOCALE = language === 'en' ? 'en-GB' : 'is-IS'; // For DD/MM/YYYY formatting
   
   // Translation object
@@ -40,7 +41,9 @@ const DepositCalculator = () => {
       calculateInterest: 'Calculate interest',
       enterDepositAmount: 'Enter deposit amount',
       rateCalculationMethod: 'Rate calculation method',
-      rateCalculationText: 'According to Icelandic rental law, deposits must be stored in the highest interest savings account available. This calculator assumes the highest available rate is the Central Bank\'s key interest rate minus 0.60%, which reflects the interest offered on Auður bank\'s savings account, generally the highest one on the market.',
+      rateCalculationText: 'According to Icelandic rental law, deposits must be stored in the highest interest savings account available. The calculator uses Auður\'s unbound savings rate as a proxy for the market high; historical amounts are derived from CBI key rate changes minus the current margin between CBI and Auður.',
+      viewRates: 'View rate data',
+      dataFetched: 'Rate data fetched',
       interestCalculation: 'Interest calculation',
       enterDepositDetails: 'Enter deposit details to calculate interest',
       netInterestEarned: 'Net interest earned',
@@ -55,13 +58,13 @@ const DepositCalculator = () => {
       effectiveAnnualRate: 'Effective annual rate (after tax):',
       interestRatePeriods: 'Interest rate periods',
       faq1Title: 'How is the deposit interest calculated?',
-      faq1Text: 'According to Icelandic law, the interest is calculated based on the Central Bank of Iceland\'s key interest rate minus a margin (0.60%), which is usually the rate of the best interest on the market. The calculator applies the appropriate rate for each time period, accounting for any rate changes during your rental period.',
+      faq1Text: 'According to Icelandic law, the interest is calculated based on the Central Bank of Iceland\'s key interest rate minus a margin matching Auður\'s unbound savings account, which is usually the highest rate on the market. The calculator applies the appropriate rate for each time period, accounting for any rate changes during your rental period.',
       faq2Title: 'Do I have to pay tax on the interest?',
       faq2Text: 'Yes, capital gains tax (Fjármagnstekjuskattur) of 22% is automatically applied to the interest earned on your deposit. This calculator shows both gross interest and net interest after tax. Whether the tax burden of this interest is on the tenant or the landlord is a matter of legal interpretation.',
       faq3Title: 'What if my landlord doesn\'t pay me the correct interest?',
       faq3Text: 'According to Article 40 of the Icelandic Rent Act (Húsaleigulög nr. 36/1994), landlords are legally required to keep deposits in separate accounts with the highest available interest rate. If your landlord hasn\'t paid the correct interest, you may have grounds for a claim. The landlord has four weeks from the end of the rental period to pay back the deposit. If they fail to do so, you can take legal action to recover the amount, and claim "dráttarvextir" (default interest) from the date the interest was due.',
       faq4Title: 'How often do interest rates change?',
-      faq4Text: 'The Central Bank of Iceland periodically reviews and adjusts its key interest rate. These changes directly affect the interest rate that should be applied to your deposit. This calculator automatically accounts for all rate changes during your rental period. The tool does not provide real-time updates, so it is advisable to check the Central Bank\'s website for the latest rates.',
+      faq4Text: 'The Central Bank of Iceland periodically reviews and adjusts its key interest rate. These changes directly affect the interest rate that should be applied to your deposit. This calculator uses rate data fetched from the CBI and Auður; see the rate data page for when it was last updated.',
       footerText1: 'Created and hosted by Gamithra.',
       footerText2: 'This tool is for informational purposes; please consult legal advice for specific cases.'
     },
@@ -74,7 +77,9 @@ const DepositCalculator = () => {
       calculateInterest: 'Reikna vexti',
       enterDepositAmount: 'Upphæð tryggingarfjár',
       rateCalculationMethod: 'Útreikningur vaxta',
-      rateCalculationText: 'Samkvæmt íslenskum húsaleigulögum skal tryggingarfé geymt á reikningi með hæstu fáanlegu vöxtum. Þessi reiknivél byggir á þeirri forsendu að hæstu vextirnir séu stýrivextir Seðlabanka Íslands að frádregnum 0,60%, sem samsvarar yfirleitt vöxtum á hæstu reikningum á markaðnum, eins og á óbundnum vaxtarreikningi hjá Auði.',
+      rateCalculationText: 'Samkvæmt íslenskum húsaleigulögum skal tryggingarfé geymt á reikningi með hæstu fáanlegu vöxtum. Reiknivélin notar vexti á óbundnum sparireikningi Auðar sem mælikvarða fyrir hæstu vexti á markaðnum; sögulegir vextir eru reiknaðir út frá stýrivöxtum Seðlabankans að frádregnum núverandi marginale milu milli SÍ og Auðar.',
+      viewRates: 'Skoða vaxtagögn',
+      dataFetched: 'Vaxtagögn sótt',
       interestCalculation: 'Vaxtareikningur',
       enterDepositDetails: 'Settu inn upplýsingar um tryggingarfé til að reikna vexti',
       netInterestEarned: 'Vaxtatekjur eftir skatt',
@@ -89,13 +94,13 @@ const DepositCalculator = () => {
       effectiveAnnualRate: 'Raunávöxtun á ári (eftir skatt):',
       interestRatePeriods: 'Þróun vaxta',
       faq1Title: 'Hvernig eru vextir af tryggingarfé reiknaðir?',
-      faq1Text: 'Vextirnir eru reiknaðir út frá stýrivöxtum Seðlabanka Íslands að frádregnum 0,60%, sem endurspeglar yfirleitt hæstu vexti á sparnaðarreikningum á markaðnum. Reiknivélin beitir viðeigandi vöxtum fyrir hvert tímabil og tekur tillit til vaxtabreytinga á leigutímanum.',
+      faq1Text: 'Vextirnir eru reiknaðir út frá stýrivöxtum Seðlabanka Íslands að frádregnum marginale milu sem samsvarar óbundnum sparireikningi Auðar, sem endurspeglar yfirleitt hæstu vexti á markaðnum. Reiknivélin beitir viðeigandi vöxtum fyrir hvert tímabil og tekur tillit til vaxtabreytinga á leigutímanum.',
       faq2Title: 'Þarf ég að greiða skatt af vöxtunum?',
       faq2Text: 'Já, fjármagnstekjuskattur (22%) er sjálfkrafa dreginn frá vöxtum af tryggingarfé. Þessi reiknivél sýnir bæði heildarvexti og vaxtatekjur eftir skatt. Hvort leigjandi eða leigusali beri skattskylduna er lögfræðilegt álitaefni.',
       faq3Title: 'Hvað ef leigusali greiðir ekki rétta vexti?',
       faq3Text: 'Samkvæmt 40. gr. húsaleigulaga nr. 36/1994 ber leigusala að geyma tryggingarfé á sérstökum reikningi með hæstu mögulegu vöxtum. Ef leigusali hefur ekki greitt rétta vexti hefur leigjandinn rétt á að leggja fram kæru. Til upplýsinga hefur leigusali fjórar vikur eftir útflutningardag til að gera kröfu í tryggingarféð. Ef hann gerir það ekki, getur leigjandi leitað réttar síns og krafist dráttarvaxta frá þeim degi sem greiðslan átti að berast.',
       faq4Title: 'Hversu oft breytast vextir?',
-      faq4Text: 'Seðlabanki Íslands endurskoðar og breytir stýrivöxtum reglulega. Þessar breytingar hafa bein áhrif á vexti sem eiga að gilda um tryggingarfé. Reiknivélin tekur sjálfkrafa mið af öllum vaxtabreytingum á leigutímanum. Tólið veitir ekki rauntímaupplýsingar, svo það er ráðlagt að skoða heimasíðu Seðlabankans fyrir nýjustu vexti.',
+      faq4Text: 'Seðlabanki Íslands endurskoðar og breytir stýrivöxtum reglulega. Þessar breytingar hafa bein áhrif á vexti sem eiga að gilda um tryggingarfé. Reiknivélin notar vaxtagögn frá Seðlabankanum og Auði; sjá síðu með vaxtagögnum fyrir hvenær síðast var uppfært.',
       footerText1: 'Reiknivélin er þróuð og hýst af Gamithru.',
       footerText2: 'Þetta tól er eingöngu til upplýsinga, leitaðu aðstoðar vegna sérstakra mála hjá lögfræðingi eða Leigjendasamtökunum.'
     }
@@ -115,93 +120,32 @@ const DepositCalculator = () => {
     return dateObj.toLocaleDateString(LOCALE); // Use locale-appropriate date formatting
   };
 
-  // Fetch and process Central Bank rates
   const fetchCurrentRates = async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const lines = CENTRAL_BANK_CSV.trim().split('\n');
-      const allRateData = [];
-
-      for (let i = 1; i < lines.length; i++) {
-        const [dateStr, overnightRate, currentAccountRate, keyInterestRate] = lines[i].split(',');
-
-        if (dateStr && keyInterestRate) {
-          // Convert DD.MM.YYYY to YYYY-MM-DD
-          const [day, month, year] = dateStr.split('.');
-          const isoDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-
-          // Highest deposit rate = Key interest rate - 0.60%
-          const keyRate = parseFloat(keyInterestRate);
-          const depositRate = Math.max(0, keyRate - DEPOSIT_RATE_MARGIN);
-
-          allRateData.push({
-            date: isoDate,
-            keyRate: keyRate,
-            depositRate: depositRate
-          });
-        }
-      }
-
-      // Sort by date to ensure chronological order
-      allRateData.sort((a, b) => new Date(a.date) - new Date(b.date));
-
-      if (allRateData.length === 0) {
-        throw new Error('No rate data available');
-      }
-
-      // Get the most recent rate
-      const latestRate = allRateData[allRateData.length - 1];
-
-      setCurrentRates({
-        arion: {
-          rate: latestRate.depositRate,
-          name: 'Highest Available (CBI Key Rate - 0.60%)',
-          lastUpdated: latestRate.date,
-          selectedAccount: {
-            name: 'Vöxtur óbundinn - 1. þrep (calculated from CBI rate)',
-            description: `Based on Central Bank key rate (${latestRate.keyRate}%) minus 0.60%`
-          },
-          calculatedFromCBI: true,
-          keyRate: latestRate.keyRate
-        }
-      });
-
-      const history = [];
-      let previousKeyRate = null;
-
-      for (const entry of allRateData) {
-        if (previousKeyRate === null || entry.keyRate !== previousKeyRate) {
-          history.push({
-            date: entry.date,
-            rates: { arion: entry.depositRate },
-            keyRate: entry.keyRate
-          });
-
-          console.log(`Rate change: ${entry.date} - Key: ${entry.keyRate}% - Deposit: ${entry.depositRate}%`);
-          previousKeyRate = entry.keyRate;
-        }
-      }
-
+      const { meta, rateHistory: history, currentRates: rates } = await loadRatesData();
+      setRateMeta(meta);
+      setCurrentRates(rates);
       setRateHistory(history);
-      console.log(`Loaded ${history.length} rate changes from Central Bank data`);
-
     } catch (err) {
-      console.error('Error parsing Central Bank data:', err);
-      setError('Failed to parse Central Bank rate data. Using fallback rates.');
+      console.error('Error loading rate data:', err);
+      setError(
+        language === 'en'
+          ? 'Failed to load rate data.'
+          : 'Ekki tókst að hlaða vaxtagögnum.'
+      );
 
-      // Fallback rates (not used anymore, but kept for reference)
       setCurrentRates({
-        arion: {
+        audur: {
           rate: 6.9,
           name: 'Fallback Rate',
-          selectedAccount: { name: 'Fallback - Vöxtur óbundinn' }
-        }
+          selectedAccount: { name: 'Fallback' },
+        },
       });
       setRateHistory([
-        { date: '2024-01-01', rates: { arion: 6.9 } },
-        { date: '2025-01-01', rates: { arion: 6.9 } }
+        { date: '2024-01-01', rates: { audur: 6.9 }, keyRate: 7.5 },
       ]);
     }
 
@@ -218,14 +162,13 @@ const DepositCalculator = () => {
       .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
 
     if (!applicableEntry) {
-      // Fallback to current rates
-      const arionRate = currentRates.arion?.rate || 6.9;
-      return { rate: arionRate, bank: 'arion' };
+      const audurRate = currentRates.audur?.rate || 6.9;
+      return { rate: audurRate, bank: 'audur' };
     }
 
     return {
-      rate: applicableEntry.rates.arion,
-      bank: 'arion',
+      rate: applicableEntry.rates.audur,
+      bank: 'audur',
       keyRate: applicableEntry.keyRate
     };
   };
@@ -370,7 +313,16 @@ const DepositCalculator = () => {
             <p className="text-lg text-gray-600 mb-4">
               {translations[language].subtitle}
             </p>
-            <div className="flex flex-col items-center gap-4">
+            <div className="flex flex-col items-center gap-3">
+              {rateMeta?.fetchedAt && (
+                <p className="text-sm text-gray-500">
+                  {translations[language].dataFetched}: {formatFetchedAt(rateMeta.fetchedAt, LOCALE)}
+                  {' · '}
+                  <Link href="/rates/" className="text-blue-600 hover:text-blue-800 hover:underline">
+                    {translations[language].viewRates}
+                  </Link>
+                </p>
+              )}
             </div>
 
             {error && (
@@ -460,6 +412,11 @@ const DepositCalculator = () => {
                   <div className="text-sm text-amber-800">
                     <p className="font-medium mb-1">{translations[language].rateCalculationMethod}</p>
                     <p>{translations[language].rateCalculationText}</p>
+                    {rateMeta?.current && (
+                      <p className="mt-2">
+                        {language === 'en' ? 'Currently' : 'Núna'}: CBI {rateMeta.current.cbiKeyRate}% − Auður {rateMeta.current.audurSavingsRate}% = {rateMeta.current.depositMargin}% {language === 'en' ? 'margin' : 'marginale mila'}.
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
