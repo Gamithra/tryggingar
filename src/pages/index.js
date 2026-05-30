@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Calculator, Calendar, Info } from 'lucide-react';
-import { formatFetchedAt, loadRatesData } from '../lib/rates.js';
+import { nominalToEarPercent } from '../lib/audurRates';
 import { formatAmountInput, parseAmountInput, parseDateString } from '../lib/format';
+import { formatFetchedAt, loadRatesData } from '../lib/rates.js';
 import { getTranslations } from '../lib/translations';
 import { localeForLanguage, useLanguage } from '../lib/useLanguage';
 import SiteLayout from '../components/SiteLayout';
@@ -84,6 +85,7 @@ const DepositCalculator = () => {
 
     return {
       rate: applicableEntry.rates.audur,
+      earRate: applicableEntry.rates.audurEar ?? nominalToEarPercent(applicableEntry.rates.audur),
       bank: 'audur',
       keyRate: applicableEntry.keyRate
     };
@@ -123,7 +125,7 @@ const DepositCalculator = () => {
 
     while (currentDate < end) {
       // Get the applicable rate for the current period
-      const { rate: rateForPeriod, bank: bankUsed, keyRate } = getHighestRateForDate(currentDate);
+      const { rate: rateForPeriod, earRate: earForPeriod, bank: bankUsed, keyRate } = getHighestRateForDate(currentDate);
 
       // Find the end of this rate period
       let periodEnd = new Date(end);
@@ -149,6 +151,7 @@ const DepositCalculator = () => {
           endDate: new Date(periodEnd),
           days: periodDays,
           rate: rateForPeriod,
+          earRate: earForPeriod,
           bank: bankUsed,
           keyRate: keyRate,
           interest: periodInterest,
@@ -318,9 +321,12 @@ const DepositCalculator = () => {
                   <p className="text-[var(--color-text-muted)]">{t.rateCalculationText}</p>
                   {rateMeta?.current && (
                     <p className="mt-3 brutal-mono text-xs font-semibold border-t-2 border-[var(--color-border)] pt-3">
-                      {t.rateNowLabel}: CBI {rateMeta.current.cbiKeyRate}% − Auður{' '}
-                      {rateMeta.current.audurSavingsRate}% = {rateMeta.current.depositMargin}%{' '}
-                      {t.rateMarginLabel}
+                      {t.rateNowLabel}: Auður {rateMeta.current.audurSavingsRate}% (
+                      {(
+                        rateMeta.current.audurEarRate ??
+                        nominalToEarPercent(rateMeta.current.audurSavingsRate)
+                      ).toFixed(2)}
+                      % {t.earRate})
                     </p>
                   )}
                 </div>
@@ -396,7 +402,11 @@ const DepositCalculator = () => {
                             <span className="font-bold text-sm">
                               {formatDateDisplay(period.startDate)} — {formatDateDisplay(period.endDate)}
                             </span>
-                            <span className="brutal-mono font-bold text-[var(--color-primary)]">{period.rate}%</span>
+                            <span className="brutal-mono font-bold text-[var(--color-primary)]">
+                              {period.rate.toFixed(2).replace('.', ',')}% {t.nominalRate} (
+                              {(period.earRate ?? nominalToEarPercent(period.rate)).toFixed(2).replace('.', ',')}%{' '}
+                              {t.earRate})
+                            </span>
                           </div>
                           <div className="flex flex-wrap justify-between gap-2 text-xs text-[var(--color-text-muted)] brutal-mono">
                             <span>
@@ -410,6 +420,9 @@ const DepositCalculator = () => {
                         </li>
                       ))}
                     </ul>
+                    <p className="mt-4 px-4 pb-4 text-xs text-[var(--color-text-muted)] leading-relaxed border-t-2 border-[var(--color-border)] pt-4">
+                      {t.benchmarkFootnote}
+                    </p>
                   </div>
                 )}
               </div>

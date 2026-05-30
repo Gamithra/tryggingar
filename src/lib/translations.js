@@ -31,7 +31,7 @@ export const translations = {
       enterDepositAmount: 'Enter deposit amount',
       rateCalculationMethod: 'Rate calculation method',
       rateCalculationText:
-        "According to Icelandic rental law, deposits must be stored in the highest interest savings account available. The calculator uses Auður's unbound savings rate as a proxy for the market high; historical amounts are derived from CBI key rate changes minus the current margin between CBI and Auður.",
+        "According to Icelandic rental law, deposits must be stored in the highest interest savings account available. The calculator uses Auður's verified unbound savings rate for each period — including cases where Auður lagged or moved independently of the Central Bank.",
       rateNowLabel: 'Now',
       rateMarginLabel: 'margin',
       viewRates: 'View rate data',
@@ -49,10 +49,14 @@ export const translations = {
       netInterest: 'Net interest earned:',
       effectiveAnnualRate: 'Effective annual rate (after tax):',
       interestRatePeriods: 'Interest rate periods',
+      nominalRate: 'nominal',
+      earRate: 'EAR',
+      benchmarkFootnote:
+        "This calculator uses Auður's unbound savings rate as the market-high benchmark. Landsbankinn's Markmið account offered comparable or marginally higher rates during parts of 2023–2024 and may constitute an equally valid benchmark under the statute.",
       faqHeading: 'FAQ',
       faq1Title: 'How is the deposit interest calculated?',
       faq1Text:
-        "According to Icelandic law, the interest is calculated based on the Central Bank of Iceland's key interest rate minus a margin matching Auður's unbound savings account, which is usually the highest rate on the market. The calculator applies the appropriate rate for each time period, accounting for any rate changes during your rental period.",
+        "According to Icelandic law, deposit interest should match the highest available savings rate. The calculator applies Auður's verified unbound nominal rate for each sub-period, including historical cases where Auður did not immediately follow CBI rate changes.",
       faq2Title: 'Do I have to pay tax on the interest?',
       faq2Text:
         'Yes, capital gains tax (Fjármagnstekjuskattur) of 22% is automatically applied to the interest earned on your deposit. This calculator shows both gross interest and net interest after tax. Whether the tax burden of this interest is on the tenant or the landlord is a matter of legal interpretation.',
@@ -73,7 +77,10 @@ export const translations = {
       audurSavings: 'Auður savings account (unbound)',
       depositMargin: 'Applied margin (CBI − Auður)',
       depositRateUsed: 'Deposit rate used in calculator',
-      audurTable: 'Auður rate table',
+      audurEarRate: 'Auður EAR (monthly compounding)',
+      audurSchedule: 'Verified Auður nominal rate schedule',
+      note: 'Note',
+      audurTable: 'Auður rate table (live)',
       account: 'Account',
       rate: 'Rate',
       annualEquivalent: 'Annual equivalent',
@@ -84,11 +91,12 @@ export const translations = {
       date: 'Date',
       keyRate: 'Key rate',
       depositRate: 'Deposit rate',
+      depositRateEar: 'Deposit rate (EAR)',
       sources: 'Sources',
       sourceCbi: 'Seðlabanki Íslands — stýrivextir (API)',
       sourceAudur: 'Auður — vaxtatafla',
       marginNote:
-        "Historical calculations apply today's margin between the CBI key rate and Auður's unbound savings rate to all past periods. This tracks market moves reasonably well but is an approximation.",
+        'Historical deposit rates use Auður\'s verified nominal rate schedule for each period. Before May 2023, rates are estimated as CBI minus 0.50%. After the last schedule entry, the live Auður rate applies until the schedule is updated.',
     },
   },
   is: {
@@ -124,7 +132,7 @@ export const translations = {
       enterDepositAmount: 'Sláðu inn upphæð tryggingar',
       rateCalculationMethod: 'Aðferð við útreikning vaxta',
       rateCalculationText:
-        'Samkvæmt íslenskum húsaleigulögum skal geyma tryggingarfé á reikningi með hæstu fáanlegu vöxtum. Reiknivélin notar óbundna sparireikningsvexti Auðar sem viðmið fyrir hæstu vexti á markaðnum. Sögulegir vextir eru reiknaðir út frá breytingum á stýrivöxtum Seðlabankans að frádregnum núverandi vaxtamun milli Seðlabankans og Auðar.',
+        'Samkvæmt íslenskum húsaleigulögum skal geyma tryggingarfé á reikningi með hæstu fáanlegu vöxtum. Reiknivélin notar staðfesta nafnvexti Auðar fyrir hvert tímabil — þ.m.t. þegar Auður seinkaði eða breytti vöxtum óháð Seðlabankanum.',
       rateNowLabel: 'Eins og er',
       rateMarginLabel: 'vaxtamunur',
       viewRates: 'Skoða vaxtagögn',
@@ -142,10 +150,14 @@ export const translations = {
       netInterest: 'Hreinar vaxtatekjur:',
       effectiveAnnualRate: 'Raunávöxtun (eftir skatt):',
       interestRatePeriods: 'Vaxtatímabil',
+      nominalRate: 'nafnvextir',
+      earRate: 'ávöxtun',
+      benchmarkFootnote:
+        'Reiknivélin miðar við óbundna sparireikningsvexti Auðar sem viðmið hæstu vaxta á markaðinum. Markmið-reikningur Landsbankans hefur boðið upp á sambærilega eða örlítið hærri vexti á tilteknum tímabilum 2023–2024 og gæti talist jafngilt viðmið samkvæmt lögum.',
       faqHeading: 'Algengar spurningar',
       faq1Title: 'Hvernig eru vextirnir af tryggingunni reiknaðir?',
       faq1Text:
-        'Samkvæmt íslenskum lögum eru vextirnir reiknaðir út frá stýrivöxtum Seðlabanka Íslands að frádregnum vaxtamun sem samsvarar óbundnum sparireikningi Auðar, en hann býður yfirleitt upp á hæstu vexti á markaðnum. Reiknivélin miðar við viðeigandi vexti fyrir hvert tímabil fyrir sig og tekur þannig tillit til vaxtabreytinga á meðan á leigutíma stendur.',
+        'Samkvæmt íslenskum lögum eiga vextir af tryggingarfé að endurspegla hæstu fáanlegu sparivexti. Reiknivélin beitir staðfestum nafnvöxtum Auðar fyrir hvert tímabil, þ.m.t. söguleg tilvik þar sem Auður fylgdi ekki strax stýrivöxtum Seðlabankans.',
       faq2Title: 'Þarf ég að greiða skatt af vöxtunum?',
       faq2Text:
         'Já, 22% fjármagnstekjuskattur er sjálfkrafa reiknaður af vaxtatekjum tryggingarinnar. Þessi reiknivél sýnir bæði heildarvexti og hreina vexti eftir skatt. Það er hins vegar háð lögfræðilegri túlkun hvort skattbyrðin af þessum vöxtum leggist á leigjanda eða leigusala.',
@@ -166,7 +178,10 @@ export const translations = {
       audurSavings: 'Sparireikningur Auðar (óbundinn)',
       depositMargin: 'Viðmiðunarvaxtamunur (SÍ − Auður)',
       depositRateUsed: 'Innlánsvextir notaðir í reiknivél',
-      audurTable: 'Vaxtatafla Auðar',
+      audurEarRate: 'Ávöxtun Auðar (mánaðarleg birgð)',
+      audurSchedule: 'Staðfestir nafnvextir Auðar',
+      note: 'Ath.',
+      audurTable: 'Vaxtatafla Auðar (lifandi)',
       account: 'Reikningur',
       rate: 'Vextir',
       annualEquivalent: 'Ávöxtunarkrafa',
@@ -177,11 +192,12 @@ export const translations = {
       date: 'Dagsetning',
       keyRate: 'Stýrivextir',
       depositRate: 'Innlánsvextir',
+      depositRateEar: 'Innlánsvextir (ávöxtun)',
       sources: 'Heimildir',
       sourceCbi: 'Seðlabanki Íslands — stýrivextir (API)',
       sourceAudur: 'Auður — vaxtatafla',
       marginNote:
-        'Sögulegir útreikningar yfirfæra núverandi vaxtamun milli stýrivaxta Seðlabankans og óbundins sparireiknings Auðar á öll fyrri tímabil. Þessi nálgun fylgir markaðsbreytingum nokkuð vel.',
+        'Sögulegir innlánsvextir byggja á staðfestri nafnvextatöflu Auðar fyrir hvert tímabil. Fyrir maí 2023 er gert ráð fyrir SÍ − 0,50%. Eftir síðasta færslu í töflunni gildir lifandi vextir Auðar þar til taflan er uppfærð.',
     },
   },
 };

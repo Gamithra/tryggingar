@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ExternalLink } from 'lucide-react';
+import { nominalToEarPercent } from '../lib/audurRates';
 import { formatFetchedAt } from '../lib/rates';
 import { getTranslations } from '../lib/translations';
 import { localeForLanguage, useLanguage } from '../lib/useLanguage';
@@ -37,6 +38,7 @@ export default function RatesPage() {
   }, [common.loadRateDataError]);
 
   const history = data?.rateChanges ? [...data.rateChanges].reverse() : [];
+  const audurSchedule = data?.audurNominalRates ? [...data.audurNominalRates].reverse() : [];
 
   return (
     <SiteLayout
@@ -72,10 +74,10 @@ export default function RatesPage() {
               {[
                 [t.cbiKeyRate, formatRate(data.current.cbiKeyRate), 'var(--color-bg-alt)'],
                 [t.audurSavings, formatRate(data.current.audurSavingsRate), 'var(--color-secondary)'],
-                [t.depositMargin, formatRate(data.current.depositMargin), 'var(--color-bg-alt)'],
+                [t.audurEarRate, formatRate(data.current.audurEarRate ?? nominalToEarPercent(data.current.audurSavingsRate)), 'var(--color-bg-alt)'],
                 [
                   t.depositRateUsed,
-                  formatRate(data.current.cbiKeyRate - data.current.depositMargin),
+                  formatRate(data.current.depositRate ?? data.current.audurSavingsRate),
                   'var(--color-primary)',
                 ],
               ].map(([label, value, bg]) => (
@@ -89,6 +91,36 @@ export default function RatesPage() {
               {t.marginNote}
             </p>
           </section>
+
+          {audurSchedule.length > 0 && (
+            <section className="brutal-card p-6 md:p-8 overflow-hidden">
+              <h2 className="text-xl font-black uppercase tracking-tight mb-5 pb-3 border-b-[3px] border-[var(--color-border)]">
+                {t.audurSchedule}
+              </h2>
+              <div className="overflow-x-auto">
+                <table className="brutal-table">
+                  <thead>
+                    <tr>
+                      <th>{t.date}</th>
+                      <th>{t.rate}</th>
+                      <th>{t.annualEquivalent}</th>
+                      <th>{t.note}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {audurSchedule.map((row) => (
+                      <tr key={row.date}>
+                        <td>{formatDate(row.date, locale)}</td>
+                        <td className="brutal-mono font-bold">{formatRate(row.rate)}</td>
+                        <td className="brutal-mono">{formatRate(nominalToEarPercent(row.rate))}</td>
+                        <td className="text-sm text-[var(--color-text-muted)]">{row.note}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )}
 
           <section className="brutal-card p-6 md:p-8 overflow-hidden">
             <h2 className="text-xl font-black uppercase tracking-tight mb-5 pb-3 border-b-[3px] border-[var(--color-border)]">
@@ -133,6 +165,7 @@ export default function RatesPage() {
                     <th>{t.date}</th>
                     <th>{t.keyRate}</th>
                     <th>{t.depositRate}</th>
+                    <th>{t.depositRateEar}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -141,6 +174,9 @@ export default function RatesPage() {
                       <td>{formatDate(row.date, locale)}</td>
                       <td className="brutal-mono font-bold">{formatRate(row.keyRate)}</td>
                       <td className="brutal-mono">{formatRate(row.depositRate)}</td>
+                      <td className="brutal-mono text-[var(--color-text-muted)]">
+                        {formatRate(row.audurEarRate ?? nominalToEarPercent(row.depositRate))}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

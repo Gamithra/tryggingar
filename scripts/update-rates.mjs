@@ -4,11 +4,21 @@
  * then writes public/data/rates.json for the static site.
  *
  * Run: npm run update-rates
+ *
+ * Auður nominal history is hardcoded in src/lib/audurRates.js — update that file
+ * when Auður moves independently of the CBI or lags a CBI decision.
+ * The live fetch below only refreshes the current rate for dates after the schedule.
  */
 
 import { writeFileSync, mkdirSync, readFileSync, existsSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
+import {
+  AUDUR_NOMINAL_RATES,
+  audurRateAt,
+  buildMergedRateChanges,
+  nominalToEarPercent,
+} from '../src/lib/audurRates.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -108,24 +118,6 @@ async function fetchAudurRates() {
   return { accounts, savingsRate: savings.rate };
 }
 
-function buildRateChanges(dailyRates, depositMargin) {
-  const changes = [];
-  let previousKeyRate = null;
-
-  for (const entry of dailyRates) {
-    if (previousKeyRate === null || entry.keyRate !== previousKeyRate) {
-      changes.push({
-        date: entry.date,
-        keyRate: entry.keyRate,
-        depositRate: Math.max(0, entry.keyRate - depositMargin),
-      });
-      previousKeyRate = entry.keyRate;
-    }
-  }
-
-  return changes;
-}
-
 function loadExistingRates() {
   if (!existsSync(OUT_PATH)) return null;
   try {
@@ -146,9 +138,17 @@ async function main() {
   const audur = await fetchAudurRates();
 
   const latest = dailyRates[dailyRates.length - 1];
+  const scheduledRate = audurRateAt(latest.date, dailyRates, audur.savingsRate);
   const depositMargin = Math.max(0, latest.keyRate - audur.savingsRate);
 
-  const rateChanges = buildRateChanges(dailyRates, depositMargin);
+  if (Math.abs(scheduledRate - audur.savingsRate) > 0.01) {
+    console.warn(
+      `⚠ Live Auður rate (${audur.savingsRate}%) differs from schedule at ${latest.date} (${scheduledRate}%).`,
+    );
+    console.warn('  Add a new entry to AUDUR_NOMINAL_RATES in src/lib/audurRates.js if this is a new spread event.');
+  }
+
+  const rateChanges = buildMergedRateChanges(dailyRates, audur.savingsRate);
   const fetchedAt = new Date().toISOString();
 
   const output = {
@@ -162,8 +162,11 @@ async function main() {
       cbiKeyRate: latest.keyRate,
       cbiKeyRateDate: latest.date,
       audurSavingsRate: audur.savingsRate,
+      audurEarRate: Number(nominalToEarPercent(audur.savingsRate).toFixed(2)),
       depositMargin: Number(depositMargin.toFixed(2)),
+      depositRate: audur.savingsRate,
     },
+    audurNominalRates: AUDUR_NOMINAL_RATES,
     audurAccounts: audur.accounts,
     rateChanges,
   };
@@ -176,8 +179,8 @@ async function main() {
 
   console.log(`Wrote ${OUT_PATH}`);
   console.log(`  CBI key rate: ${latest.keyRate}% (${latest.date})`);
-  console.log(`  Auður savings: ${audur.savingsRate}%`);
-  console.log(`  Deposit margin: ${depositMargin.toFixed(2)}%`);
+  console.log(`  Auður savings: ${audur.savingsRate}% (${nominalToEarPercent(audur.savingsRate).toFixed(2)}% EAR)`);
+  console.log(`  Current margin: ${depositMargin.toFixed(2)}%`);
   console.log(`  Rate change events: ${rateChanges.length}${previousCount ? ` (was ${previousCount})` : ''}`);
 }
 

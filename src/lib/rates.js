@@ -1,3 +1,5 @@
+import { nominalToEarPercent } from './audurRates';
+
 export function formatFetchedAt(isoString, locale = 'is-IS') {
   if (!isoString) return '';
   return new Date(isoString).toLocaleString(locale, {
@@ -20,7 +22,10 @@ export function buildRateState(data) {
   const history = rateChanges.map((row) => ({
     date: row.date,
     keyRate: row.keyRate,
-    rates: { audur: row.depositRate },
+    rates: {
+      audur: row.depositRate,
+      audurEar: row.audurEarRate ?? nominalToEarPercent(row.depositRate),
+    },
   }));
 
   return {
@@ -29,11 +34,12 @@ export function buildRateState(data) {
     currentRates: {
       audur: {
         rate: latest.depositRate,
+        earRate: latest.audurEarRate ?? nominalToEarPercent(latest.depositRate),
         name: 'Auður (highest market savings proxy)',
         lastUpdated: latest.date,
         selectedAccount: {
           name: 'Sparnaðarreikningur (Auður)',
-          description: `CBI key rate (${current.cbiKeyRate}%) minus ${current.depositMargin.toFixed(2)}% margin`,
+          description: `Auður nominal rate (${current.audurSavingsRate}% / ${current.audurEarRate ?? nominalToEarPercent(current.audurSavingsRate).toFixed(2)}% EAR)`,
         },
         keyRate: current.cbiKeyRate,
         audurRate: current.audurSavingsRate,
