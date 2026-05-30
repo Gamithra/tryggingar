@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Calculator, Calendar, Info } from 'lucide-react';
 import { formatFetchedAt, loadRatesData } from '../lib/rates.js';
+import { formatAmountInput, parseAmountInput, parseDateString } from '../lib/format';
 import { getTranslations } from '../lib/translations';
 import { localeForLanguage, useLanguage } from '../lib/useLanguage';
 import SiteLayout from '../components/SiteLayout';
+import BrutalDatePicker from '../components/BrutalDatePicker';
 
-import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 // I18n Provider wrapper component, probably unused
 const I18nProvider = ({ locale, children }) => (
@@ -91,7 +92,8 @@ const DepositCalculator = () => {
   const calculateInterestWithVariableRates = () => {
     if (!depositAmount || !startDate || !endDate || rateHistory.length === 0) return;
 
-    const principal = parseFloat(depositAmount);
+    const principal = parseAmountInput(depositAmount);
+    if (!principal) return;
     const start = new Date(startDate);
     const end = new Date(endDate);
     const daysDiff = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
@@ -204,7 +206,12 @@ const DepositCalculator = () => {
     }).format(amount);
   };
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = new Date();
+  const minEndDate = startDate ? parseDateString(startDate) : new Date(2000, 0, 1);
+
+  const handleAmountChange = (e) => {
+    setDepositAmount(formatAmountInput(e.target.value));
+  };
 
   return (
     <I18nProvider locale={LOCALE}>
@@ -263,9 +270,9 @@ const DepositCalculator = () => {
                     type="text"
                     inputMode="numeric"
                     value={depositAmount}
-                    onChange={(e) => setDepositAmount(e.target.value)}
+                    onChange={handleAmountChange}
                     placeholder={t.enterDepositAmount}
-                    className="brutal-input pr-12"
+                    className="brutal-input pr-12 brutal-mono"
                   />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 brutal-mono text-sm font-bold">kr</span>
                 </div>
@@ -276,19 +283,12 @@ const DepositCalculator = () => {
                   <Calendar className="w-3.5 h-3.5 inline mr-1" aria-hidden="true" />
                   {t.startDate}
                 </label>
-                <DatePicker
+                <BrutalDatePicker
                   id="start-date"
-                  selected={startDate ? new Date(startDate) : null}
-                  onChange={(date) => {
-                    if (date) {
-                      setStartDate(date.toISOString().split('T')[0]);
-                    } else {
-                      setStartDate('');
-                    }
-                  }}
-                  dateFormat="dd/MM/yyyy"
-                  placeholderText="DD/MM/YYYY"
-                  className="brutal-input"
+                  value={startDate}
+                  onChange={setStartDate}
+                  language={language}
+                  maxDate={endDate ? parseDateString(endDate) : today}
                 />
               </div>
 
@@ -297,19 +297,13 @@ const DepositCalculator = () => {
                   <Calendar className="w-3.5 h-3.5 inline mr-1" aria-hidden="true" />
                   {t.endDate}
                 </label>
-                <DatePicker
+                <BrutalDatePicker
                   id="end-date"
-                  selected={endDate ? new Date(endDate) : null}
-                  onChange={(date) => {
-                    if (date) {
-                      setEndDate(date.toISOString().split('T')[0]);
-                    } else {
-                      setEndDate('');
-                    }
-                  }}
-                  dateFormat="dd/MM/yyyy"
-                  placeholderText="DD/MM/YYYY"
-                  className="brutal-input"
+                  value={endDate}
+                  onChange={setEndDate}
+                  language={language}
+                  minDate={minEndDate}
+                  maxDate={today}
                 />
               </div>
             </div>

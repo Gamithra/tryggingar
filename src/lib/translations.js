@@ -122,10 +122,10 @@ export const translations = {
       endDate: 'Lokadagsetning',
       calculateInterest: 'Reikna vexti',
       enterDepositAmount: 'Sláðu inn upphæð tryggingar',
-      rateCalculationMethod: 'Aðferð við vaxtareikning',
+      rateCalculationMethod: 'Aðferð við útreikning vaxta',
       rateCalculationText:
         'Samkvæmt íslenskum húsaleigulögum skal geyma tryggingarfé á reikningi með hæstu fáanlegu vöxtum. Reiknivélin notar óbundna sparireikningsvexti Auðar sem viðmið fyrir hæstu vexti á markaðnum. Sögulegir vextir eru reiknaðir út frá breytingum á stýrivöxtum Seðlabankans að frádregnum núverandi vaxtamun milli Seðlabankans og Auðar.',
-      rateNowLabel: 'Núna',
+      rateNowLabel: 'Eins og er',
       rateMarginLabel: 'vaxtamunur',
       viewRates: 'Skoða vaxtagögn',
       dataFetched: 'Vaxtagögn sótt',

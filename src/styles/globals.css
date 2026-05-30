@@ -264,6 +264,36 @@ body {
   font-weight: 700 !important;
 }
 
+.react-datepicker__month-select,
+.react-datepicker__year-select {
+  font-family: var(--font-mono) !important;
+  font-weight: 700 !important;
+  font-size: 0.875rem !important;
+  border: 2px solid var(--color-border) !important;
+  border-radius: 0 !important;
+  background: var(--color-surface) !important;
+  padding: 4px 8px !important;
+  margin: 0 4px !important;
+  cursor: pointer !important;
+}
+
+.react-datepicker__month-select:focus,
+.react-datepicker__year-select:focus {
+  outline: 3px solid var(--color-secondary) !important;
+  outline-offset: 1px !important;
+}
+
+.react-datepicker__current-month {
+  display: none !important;
+}
+
+.react-datepicker__header__dropdown {
+  display: flex !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 8px 0 4px !important;
+}
+
 .brutal-marker {
   background: linear-gradient(
     to bottom,
