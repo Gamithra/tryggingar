@@ -1,62 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { ExternalLink } from 'lucide-react';
 import { formatFetchedAt } from '../lib/rates';
+import { getTranslations } from '../lib/translations';
 import SiteLayout from '../components/SiteLayout';
-
-const translations = {
-  en: {
-    title: 'Interest rate data',
-    subtitle: 'Sources and history used by the rental deposit calculator.',
-    back: 'Back to calculator',
-    lastUpdated: 'Data last fetched',
-    currentRates: 'Current rates',
-    cbiKeyRate: 'CBI key interest rate',
-    audurSavings: 'Auður savings account (unbound)',
-    depositMargin: 'Applied margin (CBI − Auður)',
-    depositRateUsed: 'Deposit rate used in calculator',
-    audurTable: 'Auður rate table',
-    account: 'Account',
-    rate: 'Rate',
-    annualEquivalent: 'Annual equivalent',
-    payment: 'Interest paid',
-    indexation: 'Indexation',
-    availability: 'Availability',
-    cbiHistory: 'CBI key rate changes since 2000',
-    date: 'Date',
-    keyRate: 'Key rate',
-    depositRate: 'Deposit rate',
-    sources: 'Sources',
-    marginNote: 'Historical calculations apply today\'s margin between the CBI key rate and Auður\'s unbound savings rate to all past periods. This tracks market moves reasonably well but is an approximation.',
-    loadError: 'Could not load rate data.',
-    footer: 'This tool is for informational purposes; please consult legal advice for specific cases.',
-  },
-  is: {
-    title: 'Vaxtagögn',
-    subtitle: 'Heimildir og saga sem reiknivélin notar.',
-    back: 'Til baka í reiknivél',
-    lastUpdated: 'Gögn sótt',
-    currentRates: 'Núverandi vextir',
-    cbiKeyRate: 'Stýrivextir Seðlabanka',
-    audurSavings: 'Sparnaðarreikningur Auðar (óbundinn)',
-    depositMargin: 'Notaður marginalemur (SÍ − Auður)',
-    depositRateUsed: 'Vaxtastig í reiknivél',
-    audurTable: 'Vaxtatafla Auðar',
-    account: 'Reikningur',
-    rate: 'Vextir',
-    annualEquivalent: 'Vextir á ársgrundvelli',
-    payment: 'Vaxtagreiðsla',
-    indexation: 'Verðtrygging',
-    availability: 'Hvenær laus',
-    cbiHistory: 'Breytingar á stýrivöxtum frá 2000',
-    date: 'Dagsetning',
-    keyRate: 'Stýrivextir',
-    depositRate: 'Innlánsvextir',
-    sources: 'Heimildir',
-    marginNote: 'Sögulegir útreikningar nota núverandi marginale milu milli stýrivaxta Seðlabankans og óbundins sparireiknings Auðar fyrir öll fyrri tímabil. Þetta fylgir markaðsbreytingum nokkuð vel en er áætlun.',
-    loadError: 'Ekki tókst að hlaða vaxtagögnum.',
-    footer: 'Þetta tól er eingöngu til upplýsinga, leitaðu aðstoðar vegna sérstakra mála hjá lögfræðingi eða Leigjendasamtökunum.',
-  },
-};
 
 function formatRate(value) {
   if (value === null || value === undefined) return '—';
@@ -72,12 +18,12 @@ export default function RatesPage() {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
 
-  const t = translations[language];
+  const { common, rates: t } = getTranslations(language);
   const locale = language === 'en' ? 'en-GB' : 'is-IS';
 
   useEffect(() => {
-    document.title = language === 'en' ? 'Interest rate data' : 'Vaxtagögn';
-  }, [language]);
+    document.title = t.documentTitle;
+  }, [language, t.documentTitle]);
 
   useEffect(() => {
     fetch('/data/rates.json')
@@ -86,8 +32,8 @@ export default function RatesPage() {
         return response.json();
       })
       .then(setData)
-      .catch(() => setError(t.loadError));
-  }, [t.loadError]);
+      .catch(() => setError(common.loadRateDataError));
+  }, [common.loadRateDataError]);
 
   const history = data?.rateChanges ? [...data.rateChanges].reverse() : [];
 
@@ -211,7 +157,7 @@ export default function RatesPage() {
                   rel="noopener noreferrer"
                   className="brutal-link inline-flex items-center gap-2 font-bold uppercase text-sm tracking-wide"
                 >
-                  Seðlabanki Íslands — stýrivextir (API)
+                  {t.sourceCbi}
                   <ExternalLink className="w-4 h-4" aria-hidden="true" />
                 </a>
               </li>
@@ -222,7 +168,7 @@ export default function RatesPage() {
                   rel="noopener noreferrer"
                   className="brutal-link inline-flex items-center gap-2 font-bold uppercase text-sm tracking-wide"
                 >
-                  Auður — vaxtatafla
+                  {t.sourceAudur}
                   <ExternalLink className="w-4 h-4" aria-hidden="true" />
                 </a>
               </li>
