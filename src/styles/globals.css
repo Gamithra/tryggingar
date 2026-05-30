@@ -1,26 +1,280 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-primary: #DD614C;
+  --color-primary-dark: #c44f3c;
+  --color-secondary: #DAA144;
+  --color-success: #16A34A;
+  --color-warning: #D97706;
+  --color-danger: #DC2626;
+  --color-surface: #FFFFFF;
+  --color-bg: #EDE8E0;
+  --color-bg-alt: #E2DDD4;
+  --color-text: #111827;
+  --color-text-muted: #4B5563;
+  --color-border: #111827;
+  --font-sans: "Darker Grotesque", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --shadow-brutal: 5px 5px 0 var(--color-border);
+  --shadow-brutal-sm: 3px 3px 0 var(--color-border);
+  --shadow-brutal-hover: 7px 7px 0 var(--color-border);
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: var(--color-bg);
+  --color-foreground: var(--color-text);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: 'Inter', sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 18px;
+  line-height: 1.45;
+}
+
+::selection {
+  background: var(--color-secondary);
+  color: var(--color-text);
+}
+
+/* Brutalist primitives */
+.brutal-page {
+  min-height: 100vh;
+  background:
+    linear-gradient(90deg, rgba(17, 24, 39, 0.04) 1px, transparent 1px),
+    linear-gradient(rgba(17, 24, 39, 0.04) 1px, transparent 1px),
+    var(--color-bg);
+  background-size: 24px 24px;
+}
+
+.brutal-shell {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: var(--space-5) var(--space-4) var(--space-8);
+}
+
+@media (min-width: 768px) {
+  .brutal-shell {
+    padding: var(--space-6) var(--space-5) var(--space-8);
+  }
+}
+
+.brutal-card {
+  background: var(--color-surface);
+  border: 3px solid var(--color-border);
+  box-shadow: var(--shadow-brutal);
+}
+
+.brutal-card-inset {
+  background: var(--color-bg-alt);
+  border: 2px solid var(--color-border);
+}
+
+.brutal-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin-bottom: var(--space-2);
+}
+
+.brutal-input {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 3px solid var(--color-border);
+  outline: none;
+  transition: box-shadow 0.12s ease, transform 0.12s ease;
+}
+
+.brutal-input:focus-visible {
+  box-shadow: var(--shadow-brutal-sm);
+  transform: translate(-2px, -2px);
+}
+
+.brutal-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 3px solid var(--color-border);
+  box-shadow: var(--shadow-brutal-sm);
+  cursor: pointer;
+  transition: box-shadow 0.12s ease, transform 0.12s ease, background 0.12s ease;
+}
+
+.brutal-btn:hover {
+  background: var(--color-bg-alt);
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-brutal);
+}
+
+.brutal-btn:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.brutal-btn-primary {
+  background: var(--color-primary);
+  color: var(--color-surface);
+}
+
+.brutal-btn-primary:hover {
+  background: var(--color-primary-dark);
+  color: var(--color-surface);
+}
+
+.brutal-link {
+  color: var(--color-text);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.brutal-link:hover {
+  color: var(--color-primary);
+}
+
+.brutal-stat {
+  border: 3px solid var(--color-border);
+  padding: var(--space-4);
+  background: var(--color-surface);
+}
+
+.brutal-stat-value {
+  font-family: var(--font-mono);
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.brutal-stat-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-1);
+}
+
+.brutal-divider {
+  height: 3px;
+  background: var(--color-border);
+}
+
+.brutal-tag {
+  display: inline-block;
+  padding: 2px var(--space-2);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 2px solid var(--color-border);
+  background: var(--color-secondary);
+}
+
+.brutal-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.brutal-table th,
+.brutal-table td {
+  border: 2px solid var(--color-border);
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+}
+
+.brutal-table th {
+  background: var(--color-border);
+  color: var(--color-surface);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.brutal-table tbody tr:nth-child(even) {
+  background: var(--color-bg-alt);
+}
+
+.brutal-mono {
+  font-family: var(--font-mono);
+}
+
+/* React DatePicker — brutalist overrides */
+.react-datepicker-wrapper {
+  width: 100%;
+}
+
+.react-datepicker-popper {
+  z-index: 50 !important;
+}
+
+.react-datepicker {
+  font-family: var(--font-sans) !important;
+  border: 3px solid var(--color-border) !important;
+  box-shadow: var(--shadow-brutal) !important;
+  border-radius: 0 !important;
+}
+
+.react-datepicker__header {
+  background: var(--color-bg-alt) !important;
+  border-bottom: 3px solid var(--color-border) !important;
+  border-radius: 0 !important;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  background: var(--color-primary) !important;
+  border-radius: 0 !important;
+  font-weight: 700 !important;
+}
+
+.brutal-marker {
+  background: linear-gradient(
+    to bottom,
+    transparent 0.12em,
+    color-mix(in srgb, var(--color-secondary) 72%, transparent) 0.12em,
+    color-mix(in srgb, var(--color-secondary) 72%, transparent) calc(100% - 0.08em),
+    transparent calc(100% - 0.08em)
+  );
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  padding: 0 0.12em;
+  color: var(--color-text);
+  font-weight: 700;
 }

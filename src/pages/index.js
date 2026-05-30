@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Calculator, Calendar, Info, Globe } from 'lucide-react';
+import { Calculator, Calendar, Info } from 'lucide-react';
 import { formatFetchedAt, loadRatesData } from '../lib/rates.js';
+import SiteLayout from '../components/SiteLayout';
 
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -34,7 +35,9 @@ const DepositCalculator = () => {
   const translations = {
     en: {
       title: 'Rental deposit calculator',
-      subtitle: 'According to the Article 40 of Icelandic Rent Act No. 36/1994, landlords must keep rental deposits in the highest available interest savings account. However, many landlords fail to do this, resulting in tenants losing out on interest earnings; furthermore the law does not specify how to calculate the interest owed. This tool provides a simple way to calculate the approximate interest owed.',
+      subtitleIntro: 'According to the Article 40 of Icelandic Rent Act No. 36/1994, landlords must keep rental deposits in the highest available interest savings account.',
+      subtitleHighlight: 'However, many landlords fail to do this, resulting in tenants losing out on interest earnings; furthermore the law does not specify how to calculate the interest owed.',
+      subtitleOutro: 'This tool provides a simple way to calculate the approximate interest owed.',
       depositAmount: 'Deposit amount (ISK)',
       startDate: 'Start date',
       endDate: 'End date',
@@ -70,7 +73,9 @@ const DepositCalculator = () => {
     },
     is: {
       title: 'Reiknivél tryggingarfjár',
-      subtitle: 'Samkvæmt 40. gr. húsaleigulaga nr. 36/1994 skulu leigusalar varðveita tryggingarfé á sparireikningi með hæstu mögulegu vöxtum. Margir leigusalar gera það ekki, sem veldur því að leigjendur missa af vaxtatekjum; lögin kveða ekki á um hvernig eigi að reikna út vexti sem standa leigjanda til boða. Þessi reiknivél býður upp á einfalda leið til að áætla vexti sem ættu að hafa verið greiddir.',
+      subtitleIntro: 'Samkvæmt 40. gr. húsaleigulaga nr. 36/1994 skulu leigusalar varðveita tryggingarfé á sparireikningi með hæstu mögulegu vöxtum.',
+      subtitleHighlight: 'Margir leigusalar gera það ekki, sem veldur því að leigjendur missa af vaxtatekjum; lögin kveða ekki á um hvernig eigi að reikna út vexti sem standa leigjanda til boða.',
+      subtitleOutro: 'Þessi reiknivél býður upp á einfalda leið til að áætla vexti sem ættu að hafa verið greiddir.',
       depositAmount: 'Tryggingarfé (ISK)',
       startDate: 'Upphafsdagur',
       endDate: 'Lokadagur',
@@ -293,287 +298,245 @@ const DepositCalculator = () => {
 
   return (
     <I18nProvider locale={language === 'en' ? 'en-GB' : 'is-IS'}>
-      <div className="min-h-screen bg-stone-100 p-12">
-        <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <div className="flex justify-end mb-2">
-            <button
-              onClick={() => setLanguage(language === 'en' ? 'is' : 'en')}
-              className="flex items-center space-x-2 bg-white border border-gray-300 hover:bg-blue-50 px-4 py-2 rounded-full text-sm font-medium transition-colors"
-            >
-              <Globe className="w-4 h-4 text-blue-600" />
-              <span className="text-gray-800">{language === 'en' ? 'Íslenska' : 'English'}</span>
-            </button>
-          </div>
-
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">
-              {translations[language].title}
-            </h1>
-            <p className="text-lg text-gray-600 mb-4">
-              {translations[language].subtitle}
-            </p>
-            <div className="flex flex-col items-center gap-3">
-              {rateMeta?.fetchedAt && (
-                <p className="text-sm text-gray-500">
-                  {translations[language].dataFetched}: {formatFetchedAt(rateMeta.fetchedAt, LOCALE)}
-                  {' · '}
-                  <Link href="/rates/" className="text-blue-600 hover:text-blue-800 hover:underline">
-                    {translations[language].viewRates}
-                  </Link>
-                </p>
-              )}
-            </div>
-
+      <SiteLayout
+        language={language}
+        setLanguage={setLanguage}
+        title={translations[language].title}
+        subtitle={
+          <>
+            {translations[language].subtitleIntro}{' '}
+            <span className="brutal-marker">{translations[language].subtitleHighlight}</span>{' '}
+            {translations[language].subtitleOutro}
+          </>
+        }
+        activeNav="calculator"
+        meta={
+          <>
+            {rateMeta?.fetchedAt && (
+              <p className="text-sm text-[var(--color-text-muted)] brutal-mono">
+                {translations[language].dataFetched}: {formatFetchedAt(rateMeta.fetchedAt, LOCALE)}
+                {' · '}
+                <Link href="/rates/" className="brutal-link">
+                  {translations[language].viewRates}
+                </Link>
+              </p>
+            )}
             {error && (
-              <div className="mt-2 inline-flex items-center bg-amber-100 text-amber-800 px-4 py-2 rounded-full text-sm">
-                <Info className="w-4 h-4 mr-2" />
+              <div
+                className="mt-3 inline-flex items-center gap-2 px-3 py-2 border-2 border-[var(--color-border)] bg-[var(--color-warning)] text-[var(--color-text)] text-sm font-bold"
+                role="alert"
+              >
+                <Info className="w-4 h-4 shrink-0" aria-hidden="true" />
                 {error}
               </div>
             )}
-          </div>
+          </>
+        }
+      >
+        <div className="grid lg:grid-cols-2 gap-6 md:gap-8">
+          <section className="brutal-card p-6 md:p-8">
+            <div className="flex items-center gap-3 mb-6 pb-4 border-b-[3px] border-[var(--color-border)]">
+              <Calculator className="w-6 h-6" strokeWidth={2.5} aria-hidden="true" />
+              <h2 className="text-2xl font-black uppercase tracking-tight">
+                {translations[language].calculateInterest}
+              </h2>
+            </div>
 
-          <div className="grid lg:grid-cols-2 gap-8">
-            {/* Input form */}
-            <div className="bg-white rounded-2xl p-8">
-              <div className="flex items-center mb-6">
-                <Calculator className="w-6 h-6 text-blue-600 mr-3" />
-                <h2 className="text-2xl font-semibold text-gray-900">{translations[language].calculateInterest}</h2>
+            <div className="space-y-5">
+              <div>
+                <label htmlFor="deposit-amount" className="brutal-label">
+                  {translations[language].depositAmount}
+                </label>
+                <div className="relative">
+                  <input
+                    id="deposit-amount"
+                    type="text"
+                    inputMode="numeric"
+                    value={depositAmount}
+                    onChange={(e) => setDepositAmount(e.target.value)}
+                    placeholder={translations[language].enterDepositAmount}
+                    className="brutal-input pr-12"
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 brutal-mono text-sm font-bold">kr</span>
+                </div>
               </div>
 
-              <div className="space-y-6">
-                {/* Deposit amount */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {translations[language].depositAmount}
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={depositAmount}
-                      onChange={(e) => setDepositAmount(e.target.value)}
-                      placeholder={translations[language].enterDepositAmount}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg text-gray-900"
-                    />
-                    <span className="absolute right-3 top-3 text-gray-700">kr</span>
-                  </div>
-                </div>
-
-                {/* Start date */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <Calendar className="w-4 h-4 inline mr-1" />
-                    {translations[language].startDate}
-                  </label>
-                  <DatePicker
-                    selected={startDate ? new Date(startDate) : null}
-                    onChange={(date) => {
-                      if (date) {
-                        const isoDate = date.toISOString().split('T')[0];
-                        setStartDate(isoDate);
-                      } else {
-                        setStartDate('');
-                      }
-                    }}
-                    dateFormat="dd/MM/yyyy"
-                    placeholderText="DD/MM/YYYY"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-                  />
-                </div>               
-                
-                {/* End date */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <Calendar className="w-4 h-4 inline mr-1" />
-                    {translations[language].endDate}
-                  </label>
-                  <DatePicker
-                    selected={endDate ? new Date(endDate) : null}
-                    onChange={(date) => {
-                      if (date) {
-                        const isoDate = date.toISOString().split('T')[0];
-                        setEndDate(isoDate);
-                      } else {
-                        setEndDate('');
-                      }
-                    }}
-                    dateFormat="dd/MM/yyyy"
-                    placeholderText="DD/MM/YYYY"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-                  />
-                </div>    
-
+              <div>
+                <label htmlFor="start-date" className="brutal-label">
+                  <Calendar className="w-3.5 h-3.5 inline mr-1" aria-hidden="true" />
+                  {translations[language].startDate}
+                </label>
+                <DatePicker
+                  id="start-date"
+                  selected={startDate ? new Date(startDate) : null}
+                  onChange={(date) => {
+                    if (date) {
+                      setStartDate(date.toISOString().split('T')[0]);
+                    } else {
+                      setStartDate('');
+                    }
+                  }}
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="DD/MM/YYYY"
+                  className="brutal-input"
+                />
               </div>
 
-              {/* Legal info */}
-              <div className="mt-8 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                <div className="flex items-start">
-                  <Info className="w-5 h-5 text-amber-600 mr-2 mt-0.5 flex-shrink-0" />
-                  <div className="text-sm text-amber-800">
-                    <p className="font-medium mb-1">{translations[language].rateCalculationMethod}</p>
-                    <p>{translations[language].rateCalculationText}</p>
-                    {rateMeta?.current && (
-                      <p className="mt-2">
-                        {language === 'en' ? 'Currently' : 'Núna'}: CBI {rateMeta.current.cbiKeyRate}% − Auður {rateMeta.current.audurSavingsRate}% = {rateMeta.current.depositMargin}% {language === 'en' ? 'margin' : 'marginale mila'}.
-                      </p>
-                    )}
-                  </div>
-                </div>
+              <div>
+                <label htmlFor="end-date" className="brutal-label">
+                  <Calendar className="w-3.5 h-3.5 inline mr-1" aria-hidden="true" />
+                  {translations[language].endDate}
+                </label>
+                <DatePicker
+                  id="end-date"
+                  selected={endDate ? new Date(endDate) : null}
+                  onChange={(date) => {
+                    if (date) {
+                      setEndDate(date.toISOString().split('T')[0]);
+                    } else {
+                      setEndDate('');
+                    }
+                  }}
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="DD/MM/YYYY"
+                  className="brutal-input"
+                />
               </div>
             </div>
 
-            {/* Results */}
-            <div className="bg-white rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-6">{translations[language].interestCalculation}</h2>
-
-              {results ? (
-                <div className="space-y-6">
-                  {/* Summary cards */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                      <p className="text-sm font-medium text-green-800">{translations[language].netInterestEarned}</p>
-                      <p className="text-2xl font-bold text-green-900">
-                        {formatCurrency(results.netInterest)}
-                      </p>
-                    </div>
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <p className="text-sm font-medium text-blue-800">{translations[language].totalAmount}</p>
-                      <p className="text-2xl font-bold text-blue-900">
-                        {formatCurrency(results.totalAmount)}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Detailed breakdown */}
-                  <div className="border rounded-lg overflow-hidden">
-                    <div className="bg-gray-50 px-4 py-3 border-b">
-                      <h3 className="font-medium text-gray-900">{translations[language].detailedBreakdown}</h3>
-                    </div>
-                    <div className="p-4 space-y-3">
-                      <div className="flex justify-between">
-                        <span className="text-gray-800">{translations[language].originalDeposit}</span>
-                        <span className="font-medium text-gray-900">{formatCurrency(results.principal)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-800">{translations[language].duration}</span>
-                        <span className="font-medium text-gray-900">{results.daysDiff} {translations[language].days}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-800">{translations[language].grossInterest}</span>
-                        <span className="font-medium text-gray-900">{formatCurrency(results.grossInterest)}</span>
-                      </div>
-                      <div className="flex justify-between text-red-600">
-                        <span>{translations[language].capitalGainsTax} ({CAPITAL_GAINS_TAX}%):</span>
-                        <span className="font-medium text-gray-900">-{formatCurrency(results.tax)}</span>
-                      </div>
-                      <div className="border-t pt-3 flex justify-between text-lg font-semibold">
-                        <span className="text-gray-900">{translations[language].netInterest}</span>
-                        <span className="text-green-700 font-bold">{formatCurrency(results.netInterest)}</span>
-                      </div>
-                      <div className="flex justify-between text-sm text-gray-800">
-                        <span>{translations[language].effectiveAnnualRate}</span>
-                        <span className="text-gray-900">{results.effectiveRate.toFixed(2)}%</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Rate breakdown */}
-                  {results.rateBreakdown && results.rateBreakdown.length > 1 && (
-                    <div className="border rounded-lg overflow-hidden">
-                      <div className="bg-gray-50 px-4 py-3 border-b">
-                        <h3 className="font-medium text-gray-900">{translations[language].interestRatePeriods}</h3>
-                      </div>
-                      <div className="p-4 space-y-3">
-                        {results.rateBreakdown.map((period, index) => (
-                          <div key={index} className="bg-gray-100 p-3 rounded">
-                            <div className="flex justify-between items-center mb-2">
-                              <span className="font-medium text-sm text-gray-900">
-                                {formatDateDisplay(period.startDate)} - {formatDateDisplay(period.endDate)}
-                              </span>
-                              <div className="text-right">
-                                <span className="text-sm font-medium text-blue-600">{period.rate}%</span>
-                                {period.keyRate && (
-                                  <div className="text-xs text-gray-700">CBI: {period.keyRate}%</div>
-                                )}
-                              </div>
-                            </div>
-                            <div className="text-xs text-gray-800 space-y-1">
-                              <div className="flex justify-between">
-                                <span>{period.days} days</span>
-                                <span>Interest: {formatCurrency(period.interest)}</span>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+            <aside className="mt-8 p-4 brutal-card-inset">
+              <div className="flex items-start gap-3">
+                <Info className="w-5 h-5 shrink-0 mt-0.5" strokeWidth={2.5} aria-hidden="true" />
+                <div className="text-sm leading-relaxed">
+                  <p className="font-black uppercase text-xs tracking-wider mb-2">
+                    {translations[language].rateCalculationMethod}
+                  </p>
+                  <p className="text-[var(--color-text-muted)]">{translations[language].rateCalculationText}</p>
+                  {rateMeta?.current && (
+                    <p className="mt-3 brutal-mono text-xs font-semibold border-t-2 border-[var(--color-border)] pt-3">
+                      {language === 'en' ? 'Now' : 'Núna'}: CBI {rateMeta.current.cbiKeyRate}% − Auður{' '}
+                      {rateMeta.current.audurSavingsRate}% = {rateMeta.current.depositMargin}%{' '}
+                      {language === 'en' ? 'margin' : 'marginale mila'}
+                    </p>
                   )}
                 </div>
-              ) : (
-                <div className="text-center py-12">
-                  <Calculator className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500">{translations[language].enterDepositDetails}</p>
+              </div>
+            </aside>
+          </section>
+
+          <section className="brutal-card p-6 md:p-8">
+            <h2 className="text-2xl font-black uppercase tracking-tight mb-6 pb-4 border-b-[3px] border-[var(--color-border)]">
+              {translations[language].interestCalculation}
+            </h2>
+
+            {results ? (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="brutal-stat" style={{ background: 'var(--color-success)', color: '#fff' }}>
+                    <p className="brutal-stat-label" style={{ color: 'rgba(255,255,255,0.85)' }}>
+                      {translations[language].netInterestEarned}
+                    </p>
+                    <p className="brutal-stat-value">{formatCurrency(results.netInterest)}</p>
+                  </div>
+                  <div className="brutal-stat" style={{ background: 'var(--color-primary)', color: '#fff' }}>
+                    <p className="brutal-stat-label" style={{ color: 'rgba(255,255,255,0.85)' }}>
+                      {translations[language].totalAmount}
+                    </p>
+                    <p className="brutal-stat-value">{formatCurrency(results.totalAmount)}</p>
+                  </div>
                 </div>
-              )}
-            </div>
-          </div>
 
-          {/* FAQ section */}
-          <div className="mt-12 bg-stone-100 rounded-2xl p-8">
-            
-            <div className="space-y-6">
-              <div className="border-b pb-4">
-                <h3 className="font-medium text-lg text-gray-900 mb-2">{translations[language].faq1Title}</h3>
-                <p className="text-gray-700">{translations[language].faq1Text}</p>
-              </div>
-              
-              <div className="border-b pb-4">
-                <h3 className="font-medium text-lg text-gray-900 mb-2">{translations[language].faq2Title}</h3>
-                <p className="text-gray-700">{translations[language].faq2Text}</p>
-              </div>
-              
-              <div className="border-b pb-4">
-                <h3 className="font-medium text-lg text-gray-900 mb-2">{translations[language].faq3Title}</h3>
-                <p className="text-gray-700">{translations[language].faq3Text}</p>
-              </div>
-              
-              <div>
-                <h3 className="font-medium text-lg text-gray-900 mb-2">{translations[language].faq4Title}</h3>
-                <p className="text-gray-700">{translations[language].faq4Text}</p>
-              </div>
-            </div>
-          </div>
+                <div className="brutal-card-inset overflow-hidden">
+                  <div className="px-4 py-3 border-b-[3px] border-[var(--color-border)] bg-[var(--color-border)] text-white">
+                    <h3 className="font-black uppercase text-sm tracking-wider">
+                      {translations[language].detailedBreakdown}
+                    </h3>
+                  </div>
+                  <dl className="p-4 space-y-3 text-sm">
+                    {[
+                      [translations[language].originalDeposit, formatCurrency(results.principal)],
+                      [translations[language].duration, `${results.daysDiff} ${translations[language].days}`],
+                      [translations[language].grossInterest, formatCurrency(results.grossInterest)],
+                      [
+                        `${translations[language].capitalGainsTax} (${CAPITAL_GAINS_TAX}%)`,
+                        `−${formatCurrency(results.tax)}`,
+                      ],
+                    ].map(([label, value]) => (
+                      <div key={label} className="flex justify-between gap-4 border-b border-[var(--color-border)]/20 pb-2">
+                        <dt className="text-[var(--color-text-muted)]">{label}</dt>
+                        <dd className="brutal-mono font-bold text-right">{value}</dd>
+                      </div>
+                    ))}
+                    <div className="flex justify-between gap-4 pt-2 text-base font-black">
+                      <dt>{translations[language].netInterest}</dt>
+                      <dd className="brutal-mono text-[var(--color-success)]">{formatCurrency(results.netInterest)}</dd>
+                    </div>
+                    <div className="flex justify-between gap-4 text-xs">
+                      <dt className="text-[var(--color-text-muted)]">{translations[language].effectiveAnnualRate}</dt>
+                      <dd className="brutal-mono font-bold">{results.effectiveRate.toFixed(2)}%</dd>
+                    </div>
+                  </dl>
+                </div>
 
-          {/* Footer */}
-          <div className="text-center mt-12 text-sm text-gray-600">
-            <p>
-              {language === 'en' ? 'Created and hosted by ' : 'Reiknivélin er þróuð og hýst af '}
-              <a 
-                href="https://gamithra.com" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:text-blue-800 hover:underline"
-              >
-                  {language === 'en' ? 'Gamithra' : 'Gamithru'}
-              </a>.
-            </p>
-            <p className="mt-1">{translations[language].footerText2}</p>
-            <p className="mt-2">
-              <a 
-                href="https://github.com/Gamithra/tryggingar" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:text-blue-800 hover:underline flex items-center justify-center gap-1"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
-                </svg>
-                GitHub
-              </a>
-            </p>
-          </div>
+                {results.rateBreakdown && results.rateBreakdown.length > 1 && (
+                  <div className="brutal-card-inset overflow-hidden">
+                    <div className="px-4 py-3 border-b-[3px] border-[var(--color-border)] bg-[var(--color-secondary)]">
+                      <h3 className="font-black uppercase text-sm tracking-wider">
+                        {translations[language].interestRatePeriods}
+                      </h3>
+                    </div>
+                    <ul className="divide-y-2 divide-[var(--color-border)]">
+                      {results.rateBreakdown.map((period, index) => (
+                        <li key={index} className="p-4 hover:bg-[var(--color-bg)] transition-colors">
+                          <div className="flex flex-wrap justify-between gap-2 mb-2">
+                            <span className="font-bold text-sm">
+                              {formatDateDisplay(period.startDate)} — {formatDateDisplay(period.endDate)}
+                            </span>
+                            <span className="brutal-mono font-bold text-[var(--color-primary)]">{period.rate}%</span>
+                          </div>
+                          <div className="flex flex-wrap justify-between gap-2 text-xs text-[var(--color-text-muted)] brutal-mono">
+                            <span>
+                              {period.days} {translations[language].days}
+                              {period.keyRate && ` · CBI ${period.keyRate}%`}
+                            </span>
+                            <span className="font-bold text-[var(--color-text)]">
+                              +{formatCurrency(period.interest)}
+                            </span>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-16 px-4 border-[3px] border-dashed border-[var(--color-border)]">
+                <Calculator className="w-14 h-14 mx-auto mb-4 opacity-30" strokeWidth={1.5} aria-hidden="true" />
+                <p className="font-bold uppercase tracking-wide text-[var(--color-text-muted)]">
+                  {translations[language].enterDepositDetails}
+                </p>
+              </div>
+            )}
+          </section>
         </div>
-      </div>
+
+        <section className="mt-10 md:mt-12 brutal-card p-6 md:p-8">
+          <h2 className="text-xl font-black uppercase tracking-tight mb-6">FAQ</h2>
+          <div className="space-y-0 divide-y-[3px] divide-[var(--color-border)]">
+            {[1, 2, 3, 4].map((n) => (
+              <details key={n} className="group py-4 first:pt-0 last:pb-0">
+                <summary className="font-black text-lg cursor-pointer list-none flex justify-between items-center gap-4 [&::-webkit-details-marker]:hidden">
+                  {translations[language][`faq${n}Title`]}
+                  <span className="brutal-mono text-sm font-bold group-open:rotate-45 transition-transform">+</span>
+                </summary>
+                <p className="mt-3 text-[var(--color-text-muted)] leading-relaxed max-w-3xl">
+                  {translations[language][`faq${n}Text`]}
+                </p>
+              </details>
+            ))}
+          </div>
+        </section>
+      </SiteLayout>
     </I18nProvider>
   );
 };
