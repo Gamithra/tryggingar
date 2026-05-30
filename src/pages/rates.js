@@ -104,7 +104,6 @@ export default function RatesPage() {
                       <th>{t.date}</th>
                       <th>{t.rate}</th>
                       <th>{t.annualEquivalent}</th>
-                      <th>{t.note}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -113,7 +112,6 @@ export default function RatesPage() {
                         <td>{formatDate(row.date, locale)}</td>
                         <td className="brutal-mono font-bold">{formatRate(row.rate)}</td>
                         <td className="brutal-mono">{formatRate(nominalToEarPercent(row.rate))}</td>
-                        <td className="text-sm text-[var(--color-text-muted)]">{row.note}</td>
                       </tr>
                     ))}
                   </tbody>
